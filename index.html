@@ -316,8 +316,82 @@
             <p><strong>Final Amplitude Equation:</strong></p>
             $$E_{amplitude}(z) = E_0 e^{-\kappa\frac{\omega}{c}z}$$
         </div>
-        <p>This proves mathematically that a non-zero \(\kappa\) forces the wave's electric field amplitude to decay exponentially as it moves through the material.</p>
     </section>
+
+    <section>
+        <h2>4. Derivation of Fresnel Equations</h2>
+        <p>Derived using <strong>Maxwell's Boundary Conditions</strong> for non-magnetic media (\(\mu_1 = \mu_2 = \mu_0\)):</p>
+        <ol>
+            <li>The component of the electric field (\(\mathbf{E}\)) tangent to the boundary must be continuous.</li>
+            <li>The component of the magnetic field (\(\mathbf{H}\)) tangent to the boundary must be continuous.</li>
+        </ol>
+        <p>We use the relationship \(H \propto nE\). Reflection (\(r\)) and transmission (\(t\)) coefficients are ratios of electric field amplitudes: \(r = \frac{E_r}{E_i}\) and \(t = \frac{E_t}{E_i}\).</p>
+
+        <h3>s-Polarization (Transverse Electric)</h3>
+        <p>\(\mathbf{E}\) is perpendicular to the plane of incidence (fully tangent to the boundary).</p>
+        <div class="card">
+            <p><strong>Step 1: E-field continuity (tangent)</strong></p>
+            $$E_{is} + E_{rs} = E_{ts} \implies 1 + r_s = t_s \quad \text{--- (Eq 1)}$$
+            <p><strong>Step 2: H-field continuity (tangent projection requires cosine)</strong></p>
+            $$n_1 E_{is} \cos\theta_i - n_1 E_{rs} \cos\theta_i = n_2 E_{ts} \cos\theta_t$$
+            $$n_1 \cos\theta_i (1 - r_s) = n_2 \cos\theta_t t_s \quad \text{--- (Eq 2)}$$
+            <p><strong>Step 3: Substitute Eq 1 into Eq 2 and solve</strong></p>
+            $$n_1 \cos\theta_i (1 - r_s) = n_2 \cos\theta_t (1 + r_s)$$
+            $$r_s = \frac{n_1 \cos\theta_i - n_2 \cos\theta_t}{n_1 \cos\theta_i + n_2 \cos\theta_t}$$
+        </div>
+
+        <h3>p-Polarization (Transverse Magnetic)</h3>
+        <p>\(\mathbf{H}\) is fully tangent, while \(\mathbf{E}\) lies in the plane of incidence.</p>
+        <div class="card">
+            <p><strong>Step 1: H-field continuity (tangent)</strong></p>
+            $$n_1 E_{ip} - n_1 E_{rp} = n_2 E_{tp} \implies n_1 (1 - r_p) = n_2 t_p \quad \text{--- (Eq 3)}$$
+            <p><strong>Step 2: E-field continuity (tangent projection requires cosine)</strong></p>
+            $$E_{ip} \cos\theta_i + E_{rp} \cos\theta_r = E_{tp} \cos\theta_t \implies \cos\theta_i (1 + r_p) = t_p \cos\theta_t \quad \text{--- (Eq 4)}$$
+            <p><strong>Step 3: Isolate \(t_p\) in Eq 3, substitute into Eq 4 and solve</strong></p>
+            $$\cos\theta_i (1 + r_p) = \frac{n_1}{n_2} (1 - r_p) \cos\theta_t$$
+            $$r_p = \frac{n_2 \cos\theta_i - n_1 \cos\theta_t}{n_2 \cos\theta_i + n_1 \cos\theta_t}$$
+        </div>
+    </section>
+
+    <section>
+        <h2>5. Irradiance & Energy Conservation</h2>
+        <p><strong>Irradiance</strong> (\(I\)) is the electromagnetic power per unit area (\(\text{W/m}^2\)). \(I \propto n|E|^2\).</p>
+        
+        <h3>Reflectance (\(R\)) and Transmittance (\(T\))</h3>
+        <div class="card">
+            $$R = \frac{I_r}{I_i} = |r|^2$$
+            $$T = \frac{I_t \cos\theta_t}{I_i \cos\theta_i} = \left( \frac{n_2 \cos\theta_t}{n_1 \cos\theta_i} \right) |t|^2$$
+        </div>
+
+        <div class="note">
+            <h4>📝 Why does T have an extra scaling factor?</h4>
+            <p>1. <strong>Impedance Change (\(n_2/n_1\)):</strong> The wave enters a new medium. Energy density is tied to the material's permittivity. Even with the same E-field amplitude, the actual power carried is different in a denser/lighter material.</p>
+            <p>2. <strong>Beam Cross-Section Change (\(\cos\theta_t/\cos\theta_i\)):</strong> Refraction changes the angle of propagation, which geometrically stretches or compresses the physical width of the beam. Since Irradiance is Power/Area, this change in area must be accounted for.</p>
+        </div>
+
+        <h3>Proof of Energy Conservation (\(R + T = 1\))</h3>
+        <p>To prove that no energy is lost, we must show that \(|r|^2 + |t|^2 \times \text{scale} = 1\).</p>
+        
+        <div class="card">
+            <h4>s-Polarization Proof</h4>
+            <p>Let \(a = n_1 \cos\theta_i\) and \(b = n_2 \cos\theta_t\).</p>
+            $$r_s = \frac{a - b}{a + b}, \quad t_s = \frac{2a}{a + b}, \quad \text{scale} = \frac{b}{a}$$
+            $$R_s + T_s = \left(\frac{a - b}{a + b}\right)^2 + \left(\frac{2a}{a + b}\right)^2 \left(\frac{b}{a}\right)$$
+            $$= \frac{(a - b)^2}{(a + b)^2} + \frac{4a^2 b}{a(a + b)^2} = \frac{(a - b)^2 + 4ab}{(a + b)^2}$$
+            $$= \frac{a^2 - 2ab + b^2 + 4ab}{(a + b)^2} = \frac{(a + b)^2}{(a + b)^2} = 1$$
+        </div>
+
+        <div class="card">
+            <h4>p-Polarization Proof</h4>
+            <p>Let \(c = n_2 \cos\theta_i\) and \(d = n_1 \cos\theta_t\).</p>
+            $$r_p = \frac{c - d}{c + d}, \quad t_p = \frac{2 n_1 \cos\theta_i}{c + d}, \quad \text{scale} = \frac{n_2 \cos\theta_t}{n_1 \cos\theta_i}$$
+            $$R_p + T_p = \left(\frac{c - d}{c + d}\right)^2 + \left(\frac{2 n_1 \cos\theta_i}{c + d}\right)^2 \left(\frac{n_2 \cos\theta_t}{n_1 \cos\theta_i}\right)$$
+            $$= \frac{(c - d)^2}{(c + d)^2} + \frac{4 (n_1 \cos\theta_i)(n_2 \cos\theta_t)}{(c + d)^2}$$
+            <p>Notice that \((n_1 \cos\theta_i)(n_2 \cos\theta_t) = (n_2 \cos\theta_i)(n_1 \cos\theta_t) = cd\).</p>
+            $$= \frac{(c - d)^2 + 4cd}{(c + d)^2} = \frac{c^2 - 2cd + d^2 + 4cd}{(c + d)^2} = \frac{(c + d)^2}{(c + d)^2} = 1$$
+        </div>
+    </section>
+
 </div>
 
 <!-- Simulator Script -->
