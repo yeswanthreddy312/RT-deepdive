@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electromagnetics & Wave Optics: Reference Guide</title>
+    
+    <!-- MathJax for rendering LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['$$', '$$']]
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --border: #cbd5e1;
+            --card-bg: #ffffff;
+            --note-bg: #fef08a;
+            --note-border: #eab308;
+            --code-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: var(--primary);
+            margin-top: 2.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        p, li {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .note {
+            background-color: var(--note-bg);
+            border-left: 4px solid var(--note-border);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+            color: #854d0e;
+        }
+
+        .note h4 {
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        code {
+            background-color: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Interactive Simulator Styles */
+        .simulator {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            background: #1e293b;
+            padding: 1.5rem;
+            border-radius: 8px;
+            color: white;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .controls {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #cbd5e1;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+
+        canvas {
+            background: #0f172a;
+            border: 1px solid #475569;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .sim-readout {
+            font-family: monospace;
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            color: #10b981;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Electromagnetics & Wave Optics</h1>
+        <p>Living Reference Guide &mdash; Concepts, Equations, and Interactive Visuals</p>
+    </header>
+
+    <section>
+        <h2>1. Reflection Equations</h2>
+        <p>Reflection describes how waves behave when encountering a boundary between two media.</p>
+
+        <h3>Geometric Optics</h3>
+        <p>The law of reflection states that the angle of incidence equals the angle of reflection, measured from the normal:</p>
+        $$\theta_i = \theta_r$$
+
+        <h3>Fresnel Equations (Physical Optics)</h3>
+        <p>Used to calculate amplitude reflection coefficients (\(r\)) for different wave polarizations:</p>
+        <div class="card">
+            $$r_s = \frac{n_1 \cos\theta_i - n_2 \cos\theta_t}{n_1 \cos\theta_i + n_2 \cos\theta_t}$$
+            $$r_p = \frac{n_2 \cos\theta_i - n_1 \cos\theta_t}{n_2 \cos\theta_i + n_1 \cos\theta_t}$$
+            <p><strong>Reflectance (Power):</strong> \( R = |r|^2 \)</p>
+        </div>
+
+        <h3>Normal Incidence (\(\theta_i = 0\))</h3>
+        <p>At direct incidence, the equations simplify. This is standard for basic link budgets.</p>
+        <table>
+            <tr>
+                <th>Metric</th>
+                <th>Equation</th>
+            </tr>
+            <tr>
+                <td>Reflection Coefficient (\(r\))</td>
+                <td>\( \frac{n_2 - n_1}{n_2 + n_1} \)</td>
+            </tr>
+            <tr>
+                <td>Reflectance (\(R\))</td>
+                <td>\( \left( \frac{n_2 - n_1}{n_2 + n_1} \right)^2 \)</td>
+            </tr>
+            <tr>
+                <td>Transmission (\(T\))</td>
+                <td>\( 1 - R \)</td>
+            </tr>
+        </table>
+
+        <div class="note">
+            <h4>📝 User Query Note</h4>
+            <p><strong>Q:</strong> Reflection in Coordinate Geometry?</p>
+            <p><strong>A:</strong> To reflect a vector \(\vec{v}\) across a plane with unit normal \(\vec{n}\): 
+            $$\vec{v}_{refl} = \vec{v} - 2(\vec{v} \cdot \vec{n})\vec{n}$$</p>
+        </div>
+    </section>
+
+    <section>
+        <h2>2. Refractive Index (\(n\))</h2>
+        <p>A dimensionless number describing how fast a wave travels through a medium compared to a vacuum.</p>
+        $$n = \frac{c}{v}$$
+
+        <div class="card">
+            <ul>
+                <li><strong>Air:</strong> \(n \approx 1.0003\). Waves travel at ~99.97% of \(c\).</li>
+                <li><strong>Water:</strong> Optical frequencies \(n \approx 1.33\). RF frequencies have high effective index (\(\approx 9\)) and massive absorption.</li>
+            </ul>
+        </div>
+
+        <h3>Interactive Snell's Law Simulator</h3>
+        <p>Adjust the properties of the media and the angle of the incoming wave to see how refraction works.</p>
+        
+        <div class="simulator">
+            <canvas id="simCanvas" width="350" height="350"></canvas>
+            <div class="controls">
+                <div class="control-group">
+                    <label>Index 1 (\(n_1\)): <span id="n1Val">1.00</span> (Top Medium)</label>
+                    <input type="range" id="n1" min="1" max="3" step="0.01" value="1.00">
+                </div>
+                <div class="control-group">
+                    <label>Index 2 (\(n_2\)): <span id="n2Val">1.33</span> (Bottom Medium)</label>
+                    <input type="range" id="n2" min="1" max="3" step="0.01" value="1.33">
+                </div>
+                <div class="control-group">
+                    <label>Incident Angle (\(\theta_i\)): <span id="angVal">45</span>&deg;</label>
+                    <input type="range" id="angle" min="0" max="89" step="1" value="45">
+                </div>
+                <div class="sim-readout" id="readout">
+                    Refracted Angle: --&deg;
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>3. Advanced Wave Physics</h2>
+
+        <div class="note">
+            <h4>📝 User Query Note</h4>
+            <p><strong>Q:</strong> What is dielectric constant, relative permittivity?</p>
+            <p><strong>A:</strong> They are the same. It measures resistance to electric field formation compared to a vacuum. 
+            $$\varepsilon_r = \frac{\tilde{\varepsilon}}{\varepsilon_0}$$
+            The complex refractive index is the square root of relative permittivity: \(\tilde{n} = \sqrt{\varepsilon_r}\).
+            </p>
+        </div>
+
+        <div class="note">
+            <h4>📝 User Query Note</h4>
+            <p><strong>Q:</strong> What do you mean water molecules are highly polar?</p>
+            <p><strong>A:</strong> Water has an uneven charge distribution (permanent dipole moment \(\mathbf{p}\)). When high-frequency EM fields pass through, they exert torque (\(\boldsymbol{\tau} = \mathbf{p} \times \mathbf{E}\)). At RF/microwave frequencies, water molecules can't rotate fast enough to keep up, creating "molecular friction" that turns wave energy into heat.</p>
+        </div>
+
+        <div class="note">
+            <h4>📝 User Query Note</h4>
+            <p><strong>Q:</strong> What is absorption factor?</p>
+            <p><strong>A:</strong> Also known as the attenuation coefficient (\(\alpha\)). It dictates power loss over distance \(z\) via the Beer-Lambert Law: \( I(z) = I_0 e^{-\alpha z} \).<br>
+            It is tied to the imaginary part of the refractive index: \( \alpha = \frac{4\pi \kappa}{\lambda_0} \).
+            </p>
+        </div>
+
+        <div class="note">
+            <h4>📝 User Query Note</h4>
+            <p><strong>Q:</strong> What do you mean opaque to electromagnetic fields (Metals)?</p>
+            <p><strong>A:</strong> Metals have near-infinite conductivity (\(\sigma \to \infty\)). Free electrons instantly rearrange to cancel out the incoming electric field (\(\mathbf{E}_{inside} = 0\)). Since the wave cannot enter, it is perfectly reflected.</p>
+        </div>
+
+        <h3>Complex Refractive Index & Amplitude Decay</h3>
+        <p>Metals and lossy materials use a complex refractive index: \( \tilde{n} = n + i\kappa \)</p>
+        <ul>
+            <li><strong>\(n\)</strong>: Real part (phase velocity).</li>
+            <li><strong>\(\kappa\)</strong>: Extinction coefficient (decay/loss).</li>
+        </ul>
+        <p>If we substitute \(\tilde{n}\) into the plane wave equation \( E(z,t) = E_0 e^{i(kz - \omega t)} \):</p>
+        
+        <div class="card">
+            $$k = (n + i\kappa)\frac{\omega}{c}$$
+            $$E(z,t) = E_0 e^{i\left((n + i\kappa)\frac{\omega}{c}z - \omega t\right)}$$
+            <p>Distributing the \(i\) (where \(i^2 = -1\)) yields:</p>
+            $$E(z,t) = \underbrace{E_0 e^{-\kappa\frac{\omega}{c}z}}_{\text{Decay Envelope}} \cdot \underbrace{e^{i\left(n\frac{\omega}{c}z - \omega t\right)}}_{\text{Oscillating Phase}}$$
+            <p><strong>Final Amplitude Equation:</strong></p>
+            $$E_{amplitude}(z) = E_0 e^{-\kappa\frac{\omega}{c}z}$$
+        </div>
+        <p>This proves mathematically that a non-zero \(\kappa\) forces the wave's electric field amplitude to decay exponentially as it moves through the material.</p>
+    </section>
+</div>
+
+<!-- Simulator Script -->
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const inputN1 = document.getElementById('n1');
+    const inputN2 = document.getElementById('n2');
+    const inputAngle = document.getElementById('angle');
+    
+    const valN1 = document.getElementById('n1Val');
+    const valN2 = document.getElementById('n2Val');
+    const valAngle = document.getElementById('angVal');
+    const readout = document.getElementById('readout');
+
+    function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const n1 = parseFloat(inputN1.value);
+        const n2 = parseFloat(inputN2.value);
+        const angleDeg = parseFloat(inputAngle.value);
+        const angleRad = angleDeg * Math.PI / 180;
+
+        // Update labels
+        valN1.innerText = n1.toFixed(2);
+        valN2.innerText = n2.toFixed(2);
+        valAngle.innerText = angleDeg;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw top medium
+        ctx.fillStyle = `rgba(56, 189, 248, ${0.1 + (n1/3)*0.2})`;
+        ctx.fillRect(0, 0, w, cy);
+
+        // Draw bottom medium
+        ctx.fillStyle = `rgba(14, 165, 233, ${0.1 + (n2/3)*0.4})`;
+        ctx.fillRect(0, cy, w, cy);
+
+        // Draw boundary
+        ctx.beginPath();
+        ctx.moveTo(0, cy);
+        ctx.lineTo(w, cy);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw normal
+        ctx.beginPath();
+        ctx.setLineDash([5, 5]);
+        ctx.moveTo(cx, 0);
+        ctx.lineTo(cx, h);
+        ctx.strokeStyle = '#64748b';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Calculate rays
+        const rayLen = 200;
+        
+        // Incident ray (comes from top-left)
+        const incX = cx - rayLen * Math.sin(angleRad);
+        const incY = cy - rayLen * Math.cos(angleRad);
+
+        // Draw incident ray
+        ctx.beginPath();
+        ctx.moveTo(incX, incY);
+        ctx.lineTo(cx, cy);
+        ctx.strokeStyle = '#ef4444'; // Red
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Arrowhead for incident
+        drawArrow(ctx, incX, incY, cx, cy);
+
+        // Calculate refracted angle using Snell's Law
+        // n1 * sin(t1) = n2 * sin(t2)
+        const sinT2 = (n1 / n2) * Math.sin(angleRad);
+
+        if (sinT2 > 1) {
+            // Total Internal Reflection
+            readout.innerHTML = `Total Internal Reflection!`;
+            readout.style.color = '#f59e0b'; // Amber
+            
+            const refX = cx + rayLen * Math.sin(angleRad);
+            const refY = cy - rayLen * Math.cos(angleRad);
+            
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(refX, refY);
+            ctx.strokeStyle = '#ef4444';
+            ctx.stroke();
+            drawArrow(ctx, cx, cy, refX, refY);
+            
+        } else {
+            // Refraction
+            const t2Rad = Math.asin(sinT2);
+            const t2Deg = (t2Rad * 180 / Math.PI).toFixed(1);
+            readout.innerHTML = `Refracted Angle: ${t2Deg}&deg;`;
+            readout.style.color = '#10b981'; // Green
+            
+            const refrX = cx + rayLen * Math.sin(t2Rad);
+            const refrY = cy + rayLen * Math.cos(t2Rad);
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(refrX, refrY);
+            ctx.strokeStyle = '#10b981'; // Green
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            drawArrow(ctx, cx, cy, refrX, refrY);
+            
+            // Draw weak reflection
+            const refX = cx + rayLen * Math.sin(angleRad);
+            const refY = cy - rayLen * Math.cos(angleRad);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(refX, refY);
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.3)'; // Faded Red
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    }
+
+    function drawArrow(ctx, fromX, fromY, toX, toY) {
+        const headlen = 10;
+        const dx = toX - fromX;
+        const dy = toY - fromY;
+        const angle = Math.atan2(dy, dx);
+        
+        // Draw halfway
+        const midX = fromX + dx * 0.6;
+        const midY = fromY + dy * 0.6;
+
+        ctx.beginPath();
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(midX - headlen * Math.cos(angle - Math.PI / 6), midY - headlen * Math.sin(angle - Math.PI / 6));
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(midX - headlen * Math.cos(angle + Math.PI / 6), midY - headlen * Math.sin(angle + Math.PI / 6));
+        ctx.stroke();
+    }
+
+    inputN1.addEventListener('input', draw);
+    inputN2.addEventListener('input', draw);
+    inputAngle.addEventListener('input', draw);
+
+    // Initial draw
+    draw();
+</script>
+
+</body>
+</html>
