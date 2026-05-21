@@ -176,11 +176,37 @@
             color: #10b981;
             margin-top: 1rem;
         }
+        
+        /* Navigation Bar */
+        nav {
+            background-color: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <nav>
+        <a href="index.html">Reference Guide</a>
+        <a href="notes.html">Research Notes & Appendix &rarr;</a>
+    </nav>
+
     <header>
         <h1>Electromagnetics & Wave Optics</h1>
         <p>Living Reference Guide &mdash; Concepts, Equations, and Interactive Visuals</p>
@@ -224,7 +250,7 @@
         </table>
 
         <div class="note">
-            <h4>📝 User Query Note</h4>
+            <h4>統 User Query Note</h4>
             <p><strong>Q:</strong> Reflection in Coordinate Geometry?</p>
             <p><strong>A:</strong> To reflect a vector \(\vec{v}\) across a plane with unit normal \(\vec{n}\): 
             $$\vec{v}_{refl} = \vec{v} - 2(\vec{v} \cdot \vec{n})\vec{n}$$</p>
@@ -272,7 +298,7 @@
         <h2>3. Advanced Wave Physics</h2>
 
         <div class="note">
-            <h4>📝 User Query Note</h4>
+            <h4>統 User Query Note</h4>
             <p><strong>Q:</strong> What is dielectric constant, relative permittivity?</p>
             <p><strong>A:</strong> They are the same. It measures resistance to electric field formation compared to a vacuum. 
             $$\varepsilon_r = \frac{\tilde{\varepsilon}}{\varepsilon_0}$$
@@ -281,13 +307,13 @@
         </div>
 
         <div class="note">
-            <h4>📝 User Query Note</h4>
+            <h4>統 User Query Note</h4>
             <p><strong>Q:</strong> What do you mean water molecules are highly polar?</p>
             <p><strong>A:</strong> Water has an uneven charge distribution (permanent dipole moment \(\mathbf{p}\)). When high-frequency EM fields pass through, they exert torque (\(\boldsymbol{\tau} = \mathbf{p} \times \mathbf{E}\)). At RF/microwave frequencies, water molecules can't rotate fast enough to keep up, creating "molecular friction" that turns wave energy into heat.</p>
         </div>
 
         <div class="note">
-            <h4>📝 User Query Note</h4>
+            <h4>統 User Query Note</h4>
             <p><strong>Q:</strong> What is absorption factor?</p>
             <p><strong>A:</strong> Also known as the attenuation coefficient (\(\alpha\)). It dictates power loss over distance \(z\) via the Beer-Lambert Law: \( I(z) = I_0 e^{-\alpha z} \).<br>
             It is tied to the imaginary part of the refractive index: \( \alpha = \frac{4\pi \kappa}{\lambda_0} \).
@@ -295,7 +321,7 @@
         </div>
 
         <div class="note">
-            <h4>📝 User Query Note</h4>
+            <h4>統 User Query Note</h4>
             <p><strong>Q:</strong> What do you mean opaque to electromagnetic fields (Metals)?</p>
             <p><strong>A:</strong> Metals have near-infinite conductivity (\(\sigma \to \infty\)). Free electrons instantly rearrange to cancel out the incoming electric field (\(\mathbf{E}_{inside} = 0\)). Since the wave cannot enter, it is perfectly reflected.</p>
         </div>
@@ -364,7 +390,7 @@
         </div>
 
         <div class="note">
-            <h4>📝 Why does T have an extra scaling factor?</h4>
+            <h4>統 Why does T have an extra scaling factor?</h4>
             <p>1. <strong>Impedance Change (\(n_2/n_1\)):</strong> The wave enters a new medium. Energy density is tied to the material's permittivity. Even with the same E-field amplitude, the actual power carried is different in a denser/lighter material.</p>
             <p>2. <strong>Beam Cross-Section Change (\(\cos\theta_t/\cos\theta_i\)):</strong> Refraction changes the angle of propagation, which geometrically stretches or compresses the physical width of the beam. Since Irradiance is Power/Area, this change in area must be accounted for.</p>
         </div>
