@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RT-Deepdive: Research Notes & Appendix</title>
+    
+    <!-- MathJax for rendering LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['$$', '$$']]
+            }
+        };
+    </script>
+
+    <style>
+        /* Inheriting your existing theme */
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --border: #cbd5e1;
+            --card-bg: #ffffff;
+            --note-bg: #fef08a;
+            --note-border: #eab308;
+            --code-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background-color: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.75rem; color: var(--primary); margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        
+        /* Expandable Details Tabs */
+        details {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        summary {
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            color: var(--text-main);
+            list-style-type: "▶ ";
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+            list-style-type: "▼ ";
+        }
+
+        .resolution {
+            font-weight: 500;
+            color: #b45309; /* Dark Amber */
+            background: #fef3c7;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav>
+        <a href="index.html">← Back to Reference Guide</a>
+        <a href="notes.html">Research Notes & Appendix</a>
+    </nav>
+
+    <header>
+        <h1>Research Notes & Insights</h1>
+        <p>Conceptual deep-dives, video notes, and physical abstractions for the Ray Tracing Engine.</p>
+    </header>
+
+    <section>
+        <h2>Module: Electromagnetism & Maxwell's Laws</h2>
+        <p><em>Source: Eugene Khutoryansky (YouTube) & Independent Research</em></p>
+
+        <details>
+            <summary>1. Why don't positive charges create additional magnetic fields in a magnet?</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Protons are ~1,836 times heavier than electrons and are locked in a rigid crystal lattice. Their nuclear magnetic moment is ~1,000 times too weak to compete with the electron's field.</div>
+            <p><strong>Detailed Explanation:</strong> In a solid magnet, positive nuclei are locked by metallic bonds. They vibrate but cannot orbit. Electrons form a dynamic cloud around them. Furthermore, the dominant source of ferromagnetism is not orbital motion, but <strong>electron spin</strong>. Unpaired electrons act as microscopic bar magnets. Protons also have spin, but magnetic moment is inversely proportional to mass (\(\mu \propto q/m\)). Because protons are massive, their field is effectively negligible.</p>
+        </details>
+
+        <details>
+            <summary>2. Why do materials "accept" magnetic fields but "fight" electric fields?</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Electric fields pull charges apart, always creating an opposing internal field. Magnetic fields face opposition (diamagnetism), but in magnetic materials, the torque aligning electron spins is vastly stronger, overpowering the opposition.</div>
+            <p><strong>Detailed Explanation:</strong> The electric response (dielectric polarization) turns atoms into electric dipoles that naturally create an internal field pointing from + to -, nullifying the external field. For magnetism, changing flux alters electron orbits to induce a current that fights the external field (Lenz's Law). However, in materials with unpaired electrons, the external field exerts a torque that physically aligns permanent intrinsic spins. This alignment effect (paramagnetism/ferromagnetism) is exponentially stronger than diamagnetic opposition.</p>
+        </details>
+
+        <details>
+            <summary>3. The Link Between Ampère's Law and Complex Integration</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> In 2D, Ampère's Law is mathematically identical to Cauchy's Residue Theorem. The current acts as a singularity, and the loop shape doesn't matter as long as it encloses the current.</div>
+            <p><strong>Detailed Explanation:</strong> The magnetic field of a straight wire is \(\mathbf{B} = \frac{\mu_0 I}{2\pi r}\hat{\theta}\). In the complex plane (\(z = x + iy\)), this maps perfectly to integrating \(f(z) = 1/z\). By parameterizing a circular contour (\(z = R e^{i\theta}\)), the distance factors cancel out, yielding \(\oint \frac{1}{z} dz = 2\pi i\). When mapped back, the \(2\pi\) cancels the radial spread denominator, leaving only \(\mu_0 I\). The physical current is the mathematical "residue."</p>
+        </details>
+
+        <details>
+            <summary>4. The Asymmetry of Maxwell's Equations</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Ampère's Law has a charge term, but Faraday's Law doesn't because the universe lacks magnetic monopoles. There is no "magnetic current."</div>
+            <p><strong>Detailed Explanation:</strong> 
+            Ampère-Maxwell creates B-fields via two sources: \(\oint \mathbf{B} \cdot d\mathbf{l} = \mu_0 I_{enc} + \mu_0 \epsilon_0 \frac{d\Phi_E}{dt}\).<br>
+            Faraday creates E-fields via one source: \(\oint \mathbf{E} \cdot d\mathbf{l} = - \frac{d\Phi_B}{dt}\).<br>
+            If magnetic charges (\(q_m\)) existed, they would flow to create magnetic current (\(I_m\)), making Faraday's Law perfectly symmetrical.
+            </p>
+        </details>
+
+        <details>
+            <summary>5. How a 5G Signal Detaches from an Antenna</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Maxwell's "displacement current" dictates that a changing E-field generates a B-field in empty space. They enter a self-sustaining loop, leapfrogging off the antenna.</div>
+            <p><strong>Detailed Explanation:</strong> Inside the metal rod, physical AC current creates an oscillating magnetic field. As the wave leaves the wire, physical current drops to zero. However, the oscillating electric field acts as an invisible "current" (Maxwell's addition), which continues to generate the magnetic field. A changing E-field creates a changing B-field, which instantly creates a changing E-field (Faraday's Law). The fields lock into a mutually perpendicular loop and propagate at \(c\).</p>
+        </details>
+
+        <details>
+            <summary>6. Effect-Based Substitution (Beam Tracing Abstraction)</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Brute-forcing billions of rays is computationally impossible. We use mathematical equivalents to trick the physics engine, like treating a bundle of rays as one "Beam."</div>
+            <p><strong>Detailed Explanation:</strong> Instead of launching 10 separate rays hitting the same wall, we use <strong>Beam Tracing</strong>. We launch a single cone or pyramid. Upon intersection, the power is scaled based on the cross-sectional area of the beam. Similarly, for rough walls, we don't trace micro-diffractions; we trace one ray and apply a Bidirectional Reflectance Distribution Function (BRDF) matrix to abstract the scattering loss.</p>
+        </details>
+
+        <details>
+            <summary>7. The "Delta" Abstraction (Surrogate Models in 6G)</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> In 6G Digital Twins, instead of re-tracing an environment when an object moves, a neural network takes the previous channel state and predicts only the delta (the change).</div>
+            <p><strong>Detailed Explanation:</strong> This utilizes <strong>Residual Networks</strong> and <strong>Generative Priors</strong>. Let the channel state at time \(t\) be \(H_t\) and the environmental change be \(\Delta E\). Instead of calculating \(f(E_{t+1})\) from scratch, we calculate: \(H_{t+1} = H_t + \text{NN}(H_t, \Delta E)\). Since 99% of the environment is static, the model only learns the physics of moving objects, drastically accelerating Channel State Information (CSI) estimation.</p>
+        </details>
+
+        <details>
+            <summary>8. The "Slow Light" Abstraction</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Electromagnetic waves (photons) always travel at \(c\). The concept of waves "slowing down" (\(v = c/n\)) in a material is a macroscopic illusion caused by interference.</div>
+            <p><strong>Detailed Explanation:</strong> When a wave enters glass, it forces electrons to oscillate. These electrons emit secondary waves at \(c\), but slightly out of phase. When the primary and billions of secondary waves superpose, the resulting composite wave has a phase velocity that appears slower than \(c\). In ray tracing, we abstract away this massive quantum interference calculation by simply dividing by \(n\).</p>
+        </details>
+    </section>
+</div>
+
+</body>
+</html>
