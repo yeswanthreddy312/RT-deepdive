@@ -18,7 +18,6 @@
     </script>
 
     <style>
-        /* Inheriting your existing theme */
         :root {
             --bg-color: #f8fafc;
             --text-main: #0f172a;
@@ -47,7 +46,6 @@
             padding: 2rem;
         }
 
-        /* Navigation Bar */
         nav {
             background-color: var(--card-bg);
             padding: 1rem;
@@ -76,8 +74,8 @@
 
         h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
         h2 { font-size: 1.75rem; color: var(--primary); margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; color: var(--text-main); margin-top: 1.5rem; margin-bottom: 0.5rem; }
         
-        /* Expandable Details Tabs */
         details {
             background-color: var(--card-bg);
             border: 1px solid var(--border);
@@ -104,11 +102,20 @@
 
         .resolution {
             font-weight: 500;
-            color: #b45309; /* Dark Amber */
+            color: #b45309;
             background: #fef3c7;
             padding: 0.75rem;
             border-radius: 4px;
             margin-bottom: 1rem;
+        }
+
+        .full-text {
+            color: var(--text-muted);
+        }
+
+        .full-text ul, .full-text ol {
+            margin-top: 0.5rem;
+            padding-left: 1.5rem;
         }
     </style>
 </head>
@@ -122,63 +129,229 @@
 
     <header>
         <h1>Research Notes & Insights</h1>
-        <p>Conceptual deep-dives, video notes, and physical abstractions for the Ray Tracing Engine.</p>
+        <p>Unabridged conceptual deep-dives, mathematical derivations, and physics mechanics for the Ray Tracing Engine.</p>
     </header>
 
     <section>
         <h2>Module: Electromagnetism & Maxwell's Laws</h2>
         <p><em>Source: Eugene Khutoryansky (YouTube) & Independent Research</em></p>
 
+        <!-- INSIGHT 1 -->
         <details>
             <summary>1. Why don't positive charges create additional magnetic fields in a magnet?</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> Protons are ~1,836 times heavier than electrons and are locked in a rigid crystal lattice. Their nuclear magnetic moment is ~1,000 times too weak to compete with the electron's field.</div>
-            <p><strong>Detailed Explanation:</strong> In a solid magnet, positive nuclei are locked by metallic bonds. They vibrate but cannot orbit. Electrons form a dynamic cloud around them. Furthermore, the dominant source of ferromagnetism is not orbital motion, but <strong>electron spin</strong>. Unpaired electrons act as microscopic bar magnets. Protons also have spin, but magnetic moment is inversely proportional to mass (\(\mu \propto q/m\)). Because protons are massive, their field is effectively negligible.</p>
+            <div class="resolution"><strong>Quick Resolution:</strong> Protons are ~1,836 times heavier than electrons and are locked in a rigid crystal lattice, preventing orbital rotation. Furthermore, the dominant source of permanent magnetism is quantum spin, not orbital motion. While protons do possess spin, their massive size makes their magnetic field ~1,000 times too weak to compete with the electron's field.</div>
+            <div class="full-text">
+                <h3>1. The Crystal Lattice (Why protons don't orbit)</h3>
+                <p>In a solid permanent magnet (like a block of iron), the positive charges are the heavy atomic nuclei (protons and neutrons). Because protons are about 1,836 times more massive than electrons, they are relatively sluggish. More importantly, in a solid material, these heavy positive nuclei are locked into a rigid crystalline lattice by metallic bonds. They vibrate in place due to thermal energy, but they cannot physically rotate or orbit around the electrons. The electrons, being incredibly light, form a dynamic "cloud" around these fixed positive anchors.</p>
+                
+                <h3>2. The Real Source of Magnetism: Quantum Spin</h3>
+                <p>The classical model of an atom often imagines electrons orbiting the nucleus like planets around a sun, which would constitute a tiny loop of current. While orbital motion contributes a little bit, the dominant source of ferromagnetism (permanent magnets) is actually a quantum property called <strong>spin</strong>. Electrons possess an intrinsic angular momentum—you can loosely imagine them as tiny, perpetually spinning spheres of negative charge. Because they are charged and spinning, each electron acts like a microscopic bar magnet with its own magnetic dipole moment. When a material becomes magnetized, these electron spins align in the same direction, combining their microscopic fields into a massive macroscopic field.</p>
+                
+                <h3>3. The Nuclear Magnetic Moment (The positive charge's field)</h3>
+                <p>Protons <em>also</em> have quantum spin! This means every proton generates its own tiny magnetic field, known as the nuclear magnetic moment. However, the strength of a particle's magnetic moment (\(\mu\)) is inversely proportional to its mass (\(m\)):</p>
+                $$\mu \propto \frac{q}{m}$$
+                <p>Because the mass of a proton is overwhelmingly larger than the mass of an electron, the magnetic moment of the positive nucleus is about <strong>1,000 times weaker</strong> than the magnetic moment of the electron. On top of being incredibly weak, the spins of protons in an iron nucleus tend to pair up in opposite directions (up and down), canceling each other out. The electrons in the outer shells of an iron atom, however, have unpaired spins that are free to align and create a strong external field.</p>
+            </div>
         </details>
 
+        <!-- INSIGHT 2 -->
         <details>
             <summary>2. Why do materials "accept" magnetic fields but "fight" electric fields?</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> Electric fields pull charges apart, always creating an opposing internal field. Magnetic fields face opposition (diamagnetism), but in magnetic materials, the torque aligning electron spins is vastly stronger, overpowering the opposition.</div>
-            <p><strong>Detailed Explanation:</strong> The electric response (dielectric polarization) turns atoms into electric dipoles that naturally create an internal field pointing from + to -, nullifying the external field. For magnetism, changing flux alters electron orbits to induce a current that fights the external field (Lenz's Law). However, in materials with unpaired electrons, the external field exerts a torque that physically aligns permanent intrinsic spins. This alignment effect (paramagnetism/ferromagnetism) is exponentially stronger than diamagnetic opposition.</p>
+            <div class="resolution"><strong>Quick Resolution:</strong> Electric fields can only pull positive and negative charges apart, which always generates an opposing internal field. Magnetic fields actually do face opposition from orbital electron motion (diamagnetism), but in magnetic materials, the torque aligning the unpaired electron spins is vastly stronger, overpowering the opposition and "accepting" the field.</div>
+            <div class="full-text">
+                <h3>1. The Electric Response: Fighting the Field (Dielectric Polarization)</h3>
+                <p>When you apply an external electric field to an insulating material (a dielectric), the material opposes it. Why? Because of the physical separation of charges. Atoms and molecules consist of positive nuclei and negative electron clouds. When an external electric field is applied:</p>
+                <ol>
+                    <li><strong>The Pull:</strong> The field pulls the positive nuclei in one direction and pushes the negative electron clouds in the exact opposite direction.</li>
+                    <li><strong>The Stretch:</strong> The atoms/molecules become microscopic "electric dipoles" (like tiny batteries with a + and - end).</li>
+                    <li><strong>The Opposition:</strong> Because these newly formed dipoles have their + and - charges physically pulled apart by the external field, they create their own internal electric field pointing from their + end to their - end. <strong>This internal field inevitably points in the exact opposite direction of the external field.</strong></li>
+                </ol>
+                
+                <h3>2. The Magnetic Response: Two Competing Battles</h3>
+                <p>Magnetic fields deal with moving charges (currents) and quantum spin. When a magnetic field hits a material, two distinct phenomena happen simultaneously:</p>
+                
+                <h4>A. Diamagnetism (Fighting the Field - Lenz's Law)</h4>
+                <ul>
+                    <li>When an external magnetic field is applied to an atom, the moving electrons in their orbitals experience a change in magnetic flux.</li>
+                    <li>According to <strong>Lenz's Law</strong>, nature hates a change in magnetic flux. The changing flux induces a tiny electromotive force (EMF) that alters the orbital motion of the electrons.</li>
+                    <li>These altered orbits create tiny, induced current loops whose sole purpose is to generate a magnetic field that <strong>opposes</strong> the external field.</li>
+                    <li>So, at the pure orbital level, materials <em>do</em> fight magnetic fields. This is diamagnetism, and it happens in all materials.</li>
+                </ul>
+
+                <h4>B. Paramagnetism & Ferromagnetism (Accepting the Field - Spin Alignment)</h4>
+                <ul>
+                    <li>Many atoms have unpaired electrons. These unpaired electrons have intrinsic quantum spin, making them act like permanent, microscopic bar magnets.</li>
+                    <li>When an external magnetic field is applied, it exerts a torque on these tiny permanent magnets, physically twisting them to align with the external field.</li>
+                    <li>When they align, their individual magnetic fields add to the external field, amplifying it.</li>
+                </ul>
+                <p><strong>Conclusion:</strong> In an electric field, pulling + and - charges apart always creates an opposing field. In a magnetic field, the orbital motion (diamagnetism) always fights the field. But, if the atoms have unpaired electron spins, the torque aligning those spins is exponentially stronger than the diamagnetic opposition. The spins align with the field, overpowering the induced opposition.</p>
+            </div>
         </details>
 
+        <!-- INSIGHT 3 -->
         <details>
             <summary>3. The Link Between Ampère's Law and Complex Integration</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> In 2D, Ampère's Law is mathematically identical to Cauchy's Residue Theorem. The current acts as a singularity, and the loop shape doesn't matter as long as it encloses the current.</div>
-            <p><strong>Detailed Explanation:</strong> The magnetic field of a straight wire is \(\mathbf{B} = \frac{\mu_0 I}{2\pi r}\hat{\theta}\). In the complex plane (\(z = x + iy\)), this maps perfectly to integrating \(f(z) = 1/z\). By parameterizing a circular contour (\(z = R e^{i\theta}\)), the distance factors cancel out, yielding \(\oint \frac{1}{z} dz = 2\pi i\). When mapped back, the \(2\pi\) cancels the radial spread denominator, leaving only \(\mu_0 I\). The physical current is the mathematical "residue."</p>
+            <div class="resolution"><strong>Quick Resolution:</strong> In two dimensions, Ampère's Law is mathematically identical to Cauchy's Residue Theorem. A current-carrying wire acts as a mathematical singularity (a pole) in a complex plane. The physical current (\(I\)) serves as the "residue."</div>
+            <div class="full-text">
+                <h3>Step 1: The Physics (The 1/r Magnetic Field)</h3>
+                <p>Imagine an infinitely long wire sitting on the z-axis, carrying current \(I\). We are looking down at the 2D \(xy\)-plane. The magnitude of the magnetic field at a distance \(r\) is \(B = \frac{\mu_0 I}{2\pi r}\).</p>
+                <p>Since the magnetic field curls in a circle around the wire, its vector direction is \(\hat{\theta}\). In Cartesian coordinates, the full magnetic field vector is:</p>
+                $$\mathbf{B} = \frac{\mu_0 I}{2\pi(x^2 + y^2)} (-y\hat{i} + x\hat{j})$$
+                <p>Setting up the line integral around a closed path (\(d\mathbf{l} = dx\hat{i} + dy\hat{j}\)):</p>
+                $$\oint \mathbf{B} \cdot d\mathbf{l} = \frac{\mu_0 I}{2\pi} \oint \frac{-y dx + x dy}{x^2 + y^2}$$
+
+                <h3>Step 2: The Math (The Complex Singularity)</h3>
+                <p>Let's integrate the complex function \(f(z) = 1/z\) around a closed contour enclosing the origin. Expanding \(1/z = \frac{x - iy}{x^2 + y^2}\) and \(dz = dx + i dy\):</p>
+                $$\oint \frac{1}{z} dz = \oint \left( \frac{x - iy}{x^2 + y^2} \right) (dx + i dy)$$
+                <p>Separating the real and imaginary parts:</p>
+                $$\oint \frac{1}{z} dz = \underbrace{\oint \frac{x dx + y dy}{x^2 + y^2}}_{\text{Real}} + i \underbrace{\oint \frac{x dy - y dx}{x^2 + y^2}}_{\text{Imaginary}}$$
+                <p>Notice the <strong>imaginary part</strong> is exactly identical to the integral portion of our magnetic field equation from Step 1!</p>
+
+                <h3>Step 3: Unpacking the Singularity & Cauchy's Theorem</h3>
+                <p>To integrate around the pole without an undefined answer, we parameterize a circular contour using polar coordinates: \(z = R e^{i\theta}\) and \(dz = i R e^{i\theta} d\theta\).</p>
+                $$\oint \frac{1}{z} dz = \int_0^{2\pi} \frac{1}{R e^{i\theta}} (i R e^{i\theta} d\theta)$$
+                <p>The \(R e^{i\theta}\) terms perfectly cancel out! Leaving:</p>
+                $$= i \int_0^{2\pi} d\theta = 2\pi i$$
+                <p>Because the answer is exactly \(0 + i(2\pi)\), the real integral evaluates to \(0\) (physically: magnetic fields have no radial divergence/monopoles), and the imaginary integral evaluates to exactly \(2\pi\).</p>
+                <p><strong>The Grand Synthesis:</strong> Cauchy's theorem states \(\oint f(z) dz = 2\pi i \times (\text{Residue})\). Substitute this mathematical fact (\(2\pi\)) back into the physical Ampère's Law equation:</p>
+                $$\oint \mathbf{B} \cdot d\mathbf{l} = \frac{\mu_0 I}{2\pi} \times [2\pi] = \mu_0 I$$
+                <p>The \(2\pi\) generated by the topology of the complex plane perfectly cancels the \(2\pi\) from the radial spread of the magnetic field. The shape of the physical loop doesn't matter as long as the current (the singularity) is enclosed.</p>
+            </div>
         </details>
 
+        <!-- INSIGHT 4 -->
         <details>
-            <summary>4. The Asymmetry of Maxwell's Equations</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> Ampère's Law has a charge term, but Faraday's Law doesn't because the universe lacks magnetic monopoles. There is no "magnetic current."</div>
-            <p><strong>Detailed Explanation:</strong> 
-            Ampère-Maxwell creates B-fields via two sources: \(\oint \mathbf{B} \cdot d\mathbf{l} = \mu_0 I_{enc} + \mu_0 \epsilon_0 \frac{d\Phi_E}{dt}\).<br>
-            Faraday creates E-fields via one source: \(\oint \mathbf{E} \cdot d\mathbf{l} = - \frac{d\Phi_B}{dt}\).<br>
-            If magnetic charges (\(q_m\)) existed, they would flow to create magnetic current (\(I_m\)), making Faraday's Law perfectly symmetrical.
-            </p>
+            <summary>4. The Asymmetry of Maxwell's Equations (Ampère vs. Faraday)</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> This asymmetry exists because the universe contains electric charges but lacks magnetic charges (magnetic monopoles). Electric charges can physically flow to create "electric current," providing an extra physical source for magnetic fields. Without magnetic charges, there is no "magnetic current" to provide the equivalent source for electric fields.</div>
+            <div class="full-text">
+                <h3>The Source of the Asymmetry: No Magnetic Monopoles</h3>
+                <p>The reason the Ampère-Maxwell Law has two parts, while Faraday's Law only has one, boils down to the fact that <strong>electric charges exist, but magnetic charges do not.</strong></p>
+                <ul>
+                    <li><strong>To create a magnetic field (Ampère-Maxwell):</strong> You can either physically move electric charges (current, \(I\)) OR you can change an electric field over time.</li>
+                    <li><strong>To create an electric field (Faraday):</strong> You can <em>only</em> change a magnetic field over time.</li>
+                </ul>
+                <p>Why? Because there is no such thing as a solitary "magnetic charge" (a North pole without a South pole). Because there are no magnetic monopoles, there is no such thing as "magnetic current" (magnetic charges physically flowing through a wire).</p>
+                
+                <h3>The Equations</h3>
+                <p><strong>The Ampère-Maxwell Law (Creating B-Fields):</strong> A magnetic field is generated by the total electric current enclosed plus the rate of change of the electric flux.</p>
+                $$\oint \mathbf{B} \cdot d\mathbf{l} = \mu_0 I_{enc} + \mu_0 \epsilon_0 \frac{d\Phi_E}{dt}$$
+                <p><strong>Faraday's Law (Creating E-Fields):</strong> An electric field is generated <em>only</em> by the rate of change of the magnetic flux. The negative sign represents Lenz's Law.</p>
+                $$\oint \mathbf{E} \cdot d\mathbf{l} = - \frac{d\Phi_B}{dt}$$
+                <p>If a magnetic monopole existed, it would carry a magnetic charge (\(q_m\)). Flowing magnetic charges would create a magnetic current (\(I_m\)). Faraday's Law would then become perfectly symmetrical: \(\oint \mathbf{E} \cdot d\mathbf{l} = - \mu_0 I_m - \frac{d\Phi_B}{dt}\). Because \(I_m = 0\) in our observable universe, the term vanishes.</p>
+            </div>
         </details>
 
+        <!-- INSIGHT 5 -->
         <details>
             <summary>5. How a 5G Signal Detaches from an Antenna</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> Maxwell's "displacement current" dictates that a changing E-field generates a B-field in empty space. They enter a self-sustaining loop, leapfrogging off the antenna.</div>
-            <p><strong>Detailed Explanation:</strong> Inside the metal rod, physical AC current creates an oscillating magnetic field. As the wave leaves the wire, physical current drops to zero. However, the oscillating electric field acts as an invisible "current" (Maxwell's addition), which continues to generate the magnetic field. A changing E-field creates a changing B-field, which instantly creates a changing E-field (Faraday's Law). The fields lock into a mutually perpendicular loop and propagate at \(c\).</p>
+            <div class="resolution"><strong>Quick Resolution:</strong> Without Maxwell's added term, magnetic fields would only exist directly around the physical antenna wire. Maxwell's term dictates that a changing electric field generates a magnetic field out of thin air. This creates a self-sustaining loop allowing the signal to "leapfrog" off the antenna and propagate through free space.</div>
+            <div class="full-text">
+                <h3>Phase 1: Inside the Metal (The Source)</h3>
+                <p>In a 5G base station, a high-frequency alternating current is pumped into the antenna. Electrons rush up and down the metal rod. This physical current (\(I_{enc}\)) generates an oscillating magnetic field around the wire. Simultaneously, the oscillating separation of charge (top becomes positive, bottom becomes negative, then they flip) creates an oscillating electric field.</p>
+                
+                <h3>Phase 2: The Hand-Off (Leaving the Wire)</h3>
+                <p>As you move away from the physical antenna, the physical current (\(I_{enc}\)) drops to zero because there is no wire in the air. If Ampère's Law only had the current term, the magnetic field would cease to exist. However, the space around the antenna is still filled with the <em>oscillating electric field</em>. Maxwell's displacement current term (\(\mu_0 \epsilon_0 \frac{d\Phi_E}{dt}\)) takes over, acting as an invisible "current" that continues to generate the magnetic field in empty space.</p>
+                
+                <h3>Phase 3: The Leapfrog (Free Space Propagation)</h3>
+                <p>We now have two laws feeding each other continuously:</p>
+                <ol>
+                    <li>The changing electric field creates a changing magnetic field (Ampère-Maxwell Law).</li>
+                    <li>That changing magnetic field instantly creates a new changing electric field (Faraday's Law).</li>
+                </ol>
+                <p>The fields lock into a mutually perpendicular, self-generating loop. They no longer require the physical antenna or the moving electrons. The wave detaches and propagates outward at the speed of light.</p>
+            </div>
         </details>
 
+        <!-- INSIGHT 6 -->
         <details>
-            <summary>6. Effect-Based Substitution (Beam Tracing Abstraction)</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> Brute-forcing billions of rays is computationally impossible. We use mathematical equivalents to trick the physics engine, like treating a bundle of rays as one "Beam."</div>
-            <p><strong>Detailed Explanation:</strong> Instead of launching 10 separate rays hitting the same wall, we use <strong>Beam Tracing</strong>. We launch a single cone or pyramid. Upon intersection, the power is scaled based on the cross-sectional area of the beam. Similarly, for rough walls, we don't trace micro-diffractions; we trace one ray and apply a Bidirectional Reflectance Distribution Function (BRDF) matrix to abstract the scattering loss.</p>
+            <summary>6. The Mechanics of an Antenna and Alternating Current</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> A basic antenna is just two pieces of metal. "Alternating Current" (AC) means electrons vibrate back and forth in place. "High frequency" (like 3.5 GHz for 5G) means the transmitter violently pushes and pulls these electrons 3.5 billion times per second.</div>
+            <div class="full-text">
+                <h3>1. Direct Current (DC) vs. Alternating Current (AC)</h3>
+                <p><strong>DC:</strong> Electrons flow continuously through the wire in one direction, like water flowing through a hose.<br>
+                <strong>AC:</strong> There is no continuous loop. The transmitter forcefully pushes electrons into one side of the wire, then immediately reverses and sucks them back out. The electrons wiggle back and forth in place. It is like a sealed pipe full of water where a piston rapidly pushes the water left, then right.</p>
+
+                <h3>2. High Frequency "Sloshing"</h3>
+                <p>Frequency is how fast that back-and-forth wiggle happens. A typical 5G signal operates at around 3.5 GHz. That means the transmitter is violently pumping those electrons up and down the metal rod 3.5 billion times per second.</p>
+
+                <h3>3. Pumping up and down (Wave Generation)</h3>
+                <p>When the transmitter pushes electrons into the top half of the antenna, the top becomes heavily negatively charged, leaving the bottom half positively charged. Because the electrons physically moved upward to get there, that movement is an electrical current (\(I\)). According to Ampère's Law, this upward current generates a magnetic field wrapping around the rod. A fraction of a nanosecond later, the transmitter reverses. The current is now pointing downward, which instantly flips the direction of the magnetic field. This incredibly violent, fast "sloshing" of charge creates the changing fields that eventually detach as a radio wave.</p>
+            </div>
         </details>
 
+        <!-- INSIGHT 7 -->
         <details>
-            <summary>7. The "Delta" Abstraction (Surrogate Models in 6G)</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> In 6G Digital Twins, instead of re-tracing an environment when an object moves, a neural network takes the previous channel state and predicts only the delta (the change).</div>
-            <p><strong>Detailed Explanation:</strong> This utilizes <strong>Residual Networks</strong> and <strong>Generative Priors</strong>. Let the channel state at time \(t\) be \(H_t\) and the environmental change be \(\Delta E\). Instead of calculating \(f(E_{t+1})\) from scratch, we calculate: \(H_{t+1} = H_t + \text{NN}(H_t, \Delta E)\). Since 99% of the environment is static, the model only learns the physics of moving objects, drastically accelerating Channel State Information (CSI) estimation.</p>
+            <summary>7. Lenz's Law vs. AI Feedback Loops in 6G</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Just as nature uses induced currents to maintain magnetic equilibrium (Lenz's Law), modern wireless systems use deep learning loops. When the environment changes, the AI predicts the new channel state and dynamically reconfigures the hardware to maintain signal equilibrium.</div>
+            <div class="full-text">
+                <h3>The Natural Loop (Lenz's Law)</h3>
+                <ol>
+                    <li><strong>Perturbation:</strong> A magnetic field changes.</li>
+                    <li><strong>Feedback:</strong> An electromotive force (EMF) is instantly induced.</li>
+                    <li><strong>Action:</strong> Electrons move, creating an opposing magnetic field to cancel the change.</li>
+                </ol>
+
+                <h3>The AI Loop (6G Digital Twins)</h3>
+                <ol>
+                    <li><strong>Perturbation:</strong> A bus drives between the transmitter and receiver, blocking the Line of Sight.</li>
+                    <li><strong>Feedback:</strong> The receiver reports a drop in Channel State Information (CSI).</li>
+                    <li><strong>Action:</strong> The AI network calculates the loss. Using generative priors for state prediction, it anticipates where the signal can go. It updates the weights on the transmitter's antenna array to instantly steer a new beam off a nearby building (reflection), bypassing the bus and maintaining the link.</li>
+                </ol>
+
+                <h3>The Ultimate Form: Reconfigurable Intelligent Surfaces (RIS)</h3>
+                <p>We are building physical "smart walls" coated in metamaterials. If a comm link drops, the AI can literally send a signal to the wall, changing the electrical properties of the metamaterial to manually bend (refract/reflect) the wave directly to the user. The AI actively forces the environment to move in a way that keeps the communication field constant.</p>
+            </div>
         </details>
 
+        <!-- INSIGHT 8 -->
         <details>
-            <summary>8. The "Slow Light" Abstraction</summary>
-            <div class="resolution"><strong>Quick Resolution:</strong> Electromagnetic waves (photons) always travel at \(c\). The concept of waves "slowing down" (\(v = c/n\)) in a material is a macroscopic illusion caused by interference.</div>
-            <p><strong>Detailed Explanation:</strong> When a wave enters glass, it forces electrons to oscillate. These electrons emit secondary waves at \(c\), but slightly out of phase. When the primary and billions of secondary waves superpose, the resulting composite wave has a phase velocity that appears slower than \(c\). In ray tracing, we abstract away this massive quantum interference calculation by simply dividing by \(n\).</p>
+            <summary>8. Effect-Based Substitution & Ray Tracing Abstractions</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Brute-forcing billions of rays is computationally impossible. We use mathematical equivalents to trick the physics engine, like abstracting 10 individual rays hitting the same surface into a single ray with scaled amplitude (Beam Tracing).</div>
+            <div class="full-text">
+                <h3>Abstraction 1: Beam Tracing (Ray Bundling)</h3>
+                <p>Instead of launching 10 infinitely thin rays and calculating 10 separate wall intersections, you launch a single "Beam" (a cone or pyramid shape). When the beam hits a surface, you calculate the intersection <em>once</em>. The amplitude or power of that single hit is scaled based on the cross-sectional area of the beam. This reduces the Python loop complexity by orders of magnitude.</p>
+
+                <h3>Abstraction 2: Effective Material Properties (BRDF)</h3>
+                <p>When a wave hits a rough brick wall, it physically shatters into thousands of micro-diffractions. Instead of tracing 1,000 scattered rays, we use an effect-based substitution: a Bidirectional Reflectance Distribution Function (BRDF). We treat the wall as flat, trace <em>one</em> ray, and multiply the amplitude by a probability matrix to represent the scattering loss.</p>
+
+                <h3>Abstraction 3: Generative Priors</h3>
+                <p>The ultimate abstraction. Instead of running the ray tracing math at all for every minor movement, you abstract the entire physics engine into a neural network. The model instantly hallucinates the correct interference pattern without needing to manually bounce a single ray.</p>
+            </div>
+        </details>
+
+        <!-- INSIGHT 9 -->
+        <details>
+            <summary>9. The "Delta" Abstraction (Surrogate Models in 6G)</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Instead of re-tracing an environment when a small change occurs, we use a Residual Network where the input is the small change (delta) and the output is just the adjustment to the previous state. (New Output = Old Output + Delta Output).</div>
+            <div class="full-text">
+                <h3>The Mathematical Framework</h3>
+                <p>Let the channel state (the ray tracing output) at time \(t\) be \(H_t\). Let the small change in the environment (e.g., a car moving 1 meter) be \(\Delta E\). Instead of calculating a massive function \(f(E_{t+1}) = H_{t+1}\) from scratch, we use a neural network to approximate a residual function:</p>
+                $$H_{t+1} = H_t + \text{NN}(H_t, \Delta E)$$
+
+                <h3>Why this is wildly efficient</h3>
+                <p>99% of the environment (the buildings, the transmitter, the static ground) hasn't changed. By predicting only the delta, the neural network requires significantly fewer parameters and computes much faster. It only has to learn the physics of <em>moving</em> objects, not the physics of the entire universe.</p>
+
+                <h3>Generative Priors</h3>
+                <p>In advanced generative models, \(H_t\) serves as the "prior" distribution. If a link is temporarily blocked, the model conditions its generation on what the channel looked like a millisecond ago. This allows the digital twin to accurately predict the path loss and phase shifts of the new state without doing a single ray-wall intersection calculation.</p>
+            </div>
+        </details>
+
+        <!-- INSIGHT 10 -->
+        <details>
+            <summary>10. The "Slow Light" Abstraction (Superposition in Dielectrics)</summary>
+            <div class="resolution"><strong>Quick Resolution:</strong> Electromagnetic waves (photons) <em>always</em> travel at \(c\). The concept of waves "slowing down" (\(v = c/n\)) in a material is a macroscopic illusion caused by interference.</div>
+            <div class="full-text">
+                <h3>The Illusion of "Slowing Down"</h3>
+                <p>When the original 5G wave (traveling at \(c\)) enters a brick wall, it hits the atoms and forces the electron clouds to oscillate up and down. Oscillating charges create their own electromagnetic fields. So now you have two waves:</p>
+                <ol>
+                    <li>The original wave, traveling at \(c\).</li>
+                    <li>Billions of new, secondary waves generated by the vibrating electrons, also traveling at \(c\), but slightly delayed (out of phase).</li>
+                </ol>
+                <p>When these waves overlap and interfere with each other, they undergo <strong>superposition</strong>. The <em>resulting combined wave</em> (the macroscopic wave) has a phase velocity that appears to move slower than \(c\). We call this apparent speed \(v\), and we abstract the entire horrifyingly complex quantum interference pattern into a single number: the refractive index (\(n\)).</p>
+                
+                <h3>Why this matters for your code</h3>
+                <p>If you actually tried to code the true physics of a wave propagating through a wall, your computer would crash trying to simulate billions of atomic dipole radiators. Instead, you use the macroscopic abstraction (\(v = c/n\)) and pretend the wave just smoothly "slows down."</p>
+            </div>
         </details>
     </section>
 </div>
