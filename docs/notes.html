@@ -361,6 +361,98 @@
             </div>
         </details>
     </section>
+
+    <section>
+        <h2>Module: Advanced Wave Propagation &mdash; Wavefront Architecture, Diffraction &amp; Scattering</h2>
+        <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+            <p style="margin-top: 0;">
+                <strong>Sources:</strong>
+                <a href="https://www.youtube.com/@EugeneKhutoryansky" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none;">Wave Optics Visualizations (Eugene Khutoryansky)</a>
+                &amp; <a href="https://www.youtube.com/@Bozeman_Science" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none;">Wavefront Mechanics Lectures (Bozeman Science)</a>
+            </p>
+            <p style="margin-bottom: 0;">
+                <strong>Module Summary:</strong> This module bridges the physical reality of electromagnetic wave propagation and the mathematical abstractions used in ray tracing engines. It covers the geometry of wavefronts, the conditions under which a ray is a valid proxy for energy flow, how diffraction mechanisms bend signals into shadow zones, and how surface micro-structure governs whether a surface reflects specularly or scatters energy diffusely into the environment.
+            </p>
+        </div>
+
+        <!-- INSIGHT 11 -->
+        <details>
+            <summary>11. Wavefront Mechanics &amp; The Ray Abstraction</summary>
+            <div class="resolution"><strong>Core Concept:</strong> A ray is not a physical entity &mdash; it is a mathematical construct drawn normal to the wavefront surface, tracking the local direction of Poynting energy flow (\(\mathbf{S} = \mathbf{E} \times \mathbf{H}\)).</div>
+            <div class="full-text">
+                <h3>Definition: What is a Wavefront?</h3>
+                <p>A <strong>wavefront</strong> is a locus of points in space sharing an identical phase of an electromagnetic wave &mdash; the co-phasal surface where the electric field simultaneously reaches its maximum amplitude. Mathematically, this surface is defined by:</p>
+                $$\omega t - \mathbf{k} \cdot \mathbf{r} = \text{constant}$$
+                <p>where \(\omega\) is the angular frequency, \(\mathbf{k}\) is the wave vector, and \(\mathbf{r}\) is the position vector in 3D space.</p>
+
+                <h3>The Ray Proxy</h3>
+                <p>In geometric ray tracing, a <strong>ray</strong> is purely a mathematical construct drawn strictly normal (perpendicular) to the physical wavefront surface. Its direction tracks the local vector of Poynting energy flow &mdash; the direction in which electromagnetic energy is transported:</p>
+                $$\mathbf{S} = \mathbf{E} \times \mathbf{H}$$
+                <p>The ray carries no intrinsic physical width or energy of its own. It is an abstraction of the local propagation direction of the wavefront it represents.</p>
+
+                <h3>Field Transformations: Near-Field vs. Far-Field</h3>
+                <h4>Near-Field (Spherical Wavefronts)</h4>
+                <p>Point sources emit expanding spherical wavefront surfaces. Rays point radially outward (\(\nabla \times \hat{\mathbf{r}} = 0\)). Power density decays via the <strong>Inverse Square Law</strong> as the fixed total power spreads over an ever-growing spherical surface area:</p>
+                $$P_d \propto \frac{1}{r^2}$$
+
+                <h4>Far-Field (Plane Wavefronts)</h4>
+                <p>At vast distances relative to wavelength &mdash; specifically where \(r \gg \frac{2D^2}{\lambda}\) (the Fraunhofer distance, with \(D\) being the aperture size) &mdash; a localized slice of the spherical wavefront becomes effectively flat. Wavefront surfaces become perfectly parallel planes; the tracking ray vectors align into uniform, non-diverging parallel sets. This is the <strong>plane wave approximation</strong> that underlies all classical geometric ray tracing.</p>
+            </div>
+        </details>
+
+        <!-- INSIGHT 12 -->
+        <details>
+            <summary>12. High-Frequency Diffraction (Huygens&rsquo; Principle &amp; UTD)</summary>
+            <div class="resolution"><strong>Core Concept:</strong> Diffraction bends signal power around sharp obstacles into geometric shadow zones. Computational ray tracers replace full wave integration with the Uniform Theory of Diffraction (UTD) &mdash; a localized coefficient and a cone of secondary diffracted rays per edge hit.</div>
+            <div class="full-text">
+                <h3>Huygens-Fresnel Principle</h3>
+                <p>Every unobstructed point on a primary wavefront acts as a secondary, localized source of spherical wavelets. The forward envelope of all these wavelets synthesizes the next wavefront position. When a wavefront encounters a sharp obstacle edge (e.g., a building corner), it geometrically blocks some secondary sources. The remaining unblocked wavelets continue to expand radially &mdash; including <em>inward</em> behind the geometric boundary &mdash; bending signal power directly into the "shadow zone" that classical geometric optics would predict to be completely dark.</p>
+
+                <h3>Frequency Scaling of Diffraction Efficiency</h3>
+                <p>Wavelength \(\lambda\) directly dictates how efficiently edges bend signals:</p>
+                <ul>
+                    <li><strong>Low frequencies (~700 MHz, \(\lambda \approx 43\text{ cm}\)):</strong> Wavelengths are comparable to or larger than urban macro-structures. Diffraction is smooth and efficient &mdash; signals bend readily around buildings and terrain obstacles.</li>
+                    <li><strong>Next-gen high frequencies (6G sub-THz ~100 GHz, \(\lambda \approx 3\text{ mm}\)):</strong> Wavelengths become tiny relative to all structural features. Diffraction efficiency drops to near-zero, casting deep, knife-edge radio shadow zones with sharply defined boundaries and severe signal loss behind them.</li>
+                </ul>
+
+                <h3>Computational Shortcut: Uniform Theory of Diffraction (UTD)</h3>
+                <p>Full wave integration across the aperture is computationally intractable at ray-tracing scale. The <strong>UTD</strong> provides an efficient geometric approximation by treating diffraction as a local phenomenon at the edge:</p>
+                <ol>
+                    <li>Model the physical obstacle edge as a 3D geometric line vector in the scene.</li>
+                    <li>When an incident ray intersects this edge line, compute a localized <strong>diffraction coefficient tensor</strong> \(\mathbf{D}\) (dependent on geometry, frequency, polarization, and material).</li>
+                    <li>Project a continuous spatial <strong>Keller Cone</strong> of secondary diffracted rays around the edge axis &mdash; all emerging at the same polar angle from the edge as the incident ray, but spread across all azimuthal directions, wrapping around the obstacle corner profile.</li>
+                </ol>
+                <p>This collapses the full aperture integral to a single local calculation per edge intersection, making diffraction tractable in large-scale urban ray tracing simulations.</p>
+            </div>
+        </details>
+
+        <!-- INSIGHT 13 -->
+        <details>
+            <summary>13. Surface Roughness &amp; Diffuse Scattering (BRDF)</summary>
+            <div class="resolution"><strong>Core Concept:</strong> The Rayleigh Criterion determines whether a surface acts as a specular mirror or a diffuse scatterer. For millimeter-wave 6G signals, virtually all common building materials violate the smoothness threshold and shatter specular reflections into diffuse paths.</div>
+            <div class="full-text">
+                <h3>Rayleigh Roughness Criterion</h3>
+                <p>A physical surface with local protuberances of height \(h\) ceases to behave as a specular mirror and acts as a diffuse wave scatterer when the following threshold is exceeded:</p>
+                $$h > \frac{\lambda}{8 \cos\theta_i}$$
+                <p>where \(\theta_i\) is the angle of incidence relative to the surface normal. For millimetric 6G waves (\(\lambda \approx 3\text{ mm}\)), even sub-millimeter surface variations on normal brick, concrete, and masonry elements easily violate this boundary, scattering specular energy into diffuse propagation paths throughout the environment.</p>
+
+                <h3>BRDF Mathematical Implementations</h3>
+
+                <h4>1. Lambertian Model (Purely Diffuse)</h4>
+                <p>The scattered field power \(P_s\) exiting at any reflection angle \(\theta_s\) depends only on the projection cosine to the surface normal vector &mdash; entirely decoupled from the incoming ray direction:</p>
+                $$P_s(\theta_s) \propto \cos(\theta_s)$$
+                <p>This is the maximum-entropy scattering model: energy is distributed uniformly across the hemisphere, weighted by the solid angle projection factor. It is physically valid for deeply rough surfaces (concrete, asphalt, bare earth) where all phase memory of the incident wave is destroyed by surface irregularities.</p>
+
+                <h4>2. Directive Model (Combined Specular + Diffuse)</h4>
+                <p>A more physically accurate model introduces an empirical <strong>Scattering Coefficient</strong> \(S \in [0, 1]\). Starting from the baseline Fresnel reflection power coefficient \(R\), the specular and diffuse power fractions are apportioned as follows:</p>
+                <ul>
+                    <li><strong>Specular power fraction:</strong> \(R_{\text{specular}} = R \cdot (1 - S)\) &mdash; the Fresnel reflection attenuated by the fraction of energy lost to scattering.</li>
+                    <li><strong>Diffuse power fraction:</strong> \(R \cdot S\) &mdash; scales a directive spatial power lobe centered along the geometric specular reflection track, spreading energy around it.</li>
+                </ul>
+                <p>When \(S = 0\), the model degenerates to a pure Fresnel specular mirror. When \(S = 1\), all reflected power is scattered diffusely. Empirically measured values include: glass \(S \approx 0.1\), brick \(S \approx 0.5\text{&ndash;}0.7\), rough concrete \(S \approx 0.8\).</p>
+            </div>
+        </details>
+    </section>
 </div>
 
 </body>
