@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RT-Deepdive: Wavefront .obj Format</title>
+
+    <!-- MathJax for rendering LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['$$', '$$']]
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --border: #cbd5e1;
+            --card-bg: #ffffff;
+            --note-bg: #fef08a;
+            --note-border: #eab308;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        nav {
+            background-color: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        nav a:hover { text-decoration: underline; }
+
+        header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.75rem; color: var(--primary); margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; color: var(--text-main); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+
+        p, li { font-size: 1.05rem; color: var(--text-muted); }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .note {
+            background-color: var(--note-bg);
+            border-left: 4px solid var(--note-border);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+            color: #854d0e;
+        }
+
+        .note h4 {
+            margin: 0 0 0.5rem 0;
+        }
+
+        /* Syntax / code block */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.25rem 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            margin: 1rem 0;
+        }
+
+        pre .comment { color: #64748b; font-style: italic; }
+        pre .keyword { color: #7dd3fc; font-weight: bold; }
+        pre .number  { color: #86efac; }
+
+        code {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: "SFMono-Regular", Consolas, monospace;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            margin-right: 0.4rem;
+        }
+
+        .danger {
+            background-color: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 0 4px 4px 0;
+            margin: 1rem 0;
+            color: #991b1b;
+        }
+
+        .danger h4 { margin: 0 0 0.5rem 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav>
+        <a href="../index.html">Reflection &amp; Refraction</a>
+        <a href="../notes.html">Research Notes &amp; Appendix</a>
+        <a href="../diffraction.html">Diffraction &amp; Scattering</a>
+        <a href="wavefront-obj.html">Wavefront .obj Format</a>
+    </nav>
+
+    <header>
+        <h1>Wavefront <code>.obj</code> File Format</h1>
+        <p>Fundamentals Reference &mdash; Structure, Data Types, and Parser Conventions</p>
+    </header>
+
+    <!-- SECTION 1: Overview -->
+    <section>
+        <h2>1. What Is a Wavefront <code>.obj</code> File?</h2>
+        <p>
+            A Wavefront <code>.obj</code> file is a plain-text, human-readable 3D geometry format originally developed by Wavefront Technologies.
+            It is one of the most universally supported interchange formats for 3D meshes: every major 3D tool (Blender, Maya, 3ds Max) can export it,
+            and it requires no binary parsing, making it an ideal first target for a ray tracing engine loader.
+        </p>
+        <p>
+            Each line of an <code>.obj</code> file begins with a <strong>keyword prefix</strong> that declares the type of data on that line.
+            Lines beginning with <code>#</code> are comments and are ignored by parsers.
+        </p>
+
+        <div class="card">
+            <strong>Minimal valid <code>.obj</code> file (a single triangle):</strong>
+            <pre><span class="comment"># A minimal triangle mesh</span>
+<span class="keyword">v</span>  <span class="number"> 0.0  1.0  0.0</span>
+<span class="keyword">v</span>  <span class="number">-1.0 -1.0  0.0</span>
+<span class="keyword">v</span>  <span class="number"> 1.0 -1.0  0.0</span>
+<span class="keyword">f</span>  <span class="number">1 2 3</span></pre>
+        </div>
+    </section>
+
+    <!-- SECTION 2: Core Data Types -->
+    <section>
+        <h2>2. Core Data Types</h2>
+        <p>A ray tracing engine needs only three of the many keywords the format supports. The table below documents them.</p>
+
+        <table>
+            <tr>
+                <th>Prefix</th>
+                <th>Name</th>
+                <th>Syntax</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>v</code></td>
+                <td>Geometric Vertex</td>
+                <td><code>v x y z</code></td>
+                <td>A point in 3D space. The three floats are the X, Y, and Z coordinates. Accumulated into the vertex list in the order they appear in the file.</td>
+            </tr>
+            <tr>
+                <td><code>vn</code></td>
+                <td>Vertex Normal</td>
+                <td><code>vn nx ny nz</code></td>
+                <td>A unit (or non-unit) normal vector at a vertex, used for smooth shading. Not necessarily normalised by the exporter — the parser or shader must normalise if needed.</td>
+            </tr>
+            <tr>
+                <td><code>f</code></td>
+                <td>Face Definition</td>
+                <td><code>f v1 v2 v3</code> <em>or</em> <code>f v1//vn1 v2//vn2 v3//vn3</code></td>
+                <td>Defines a polygonal face by referencing vertex (and optionally normal) indices. See Section 3 for the critical indexing rule.</td>
+            </tr>
+        </table>
+
+        <h3>2.1 Geometric Vertex (<code>v</code>)</h3>
+        <p>
+            Vertices are the atomic building blocks of the mesh. Each <code>v</code> line adds one point to the vertex list.
+            The order of <code>v</code> lines in the file defines the implicit <strong>1-based index</strong> of each vertex —
+            the first <code>v</code> line is vertex <code>1</code>, the second is <code>2</code>, and so on.
+        </p>
+        <pre><span class="comment"># Four vertices of a tetrahedron</span>
+<span class="keyword">v</span>  <span class="number"> 1.0  1.0  1.0</span>   <span class="comment"># index 1</span>
+<span class="keyword">v</span>  <span class="number">-1.0 -1.0  1.0</span>   <span class="comment"># index 2</span>
+<span class="keyword">v</span>  <span class="number">-1.0  1.0 -1.0</span>   <span class="comment"># index 3</span>
+<span class="keyword">v</span>  <span class="number"> 1.0 -1.0 -1.0</span>   <span class="comment"># index 4</span></pre>
+
+        <h3>2.2 Vertex Normal (<code>vn</code>)</h3>
+        <p>
+            Normal vectors are stored in a <strong>separate, parallel list</strong> to the vertex list.
+            They are referenced independently inside face definitions using the <code>v//vn</code> syntax.
+            A normal index of <code>1</code> refers to the first <code>vn</code> line in the file.
+        </p>
+        <pre><span class="keyword">vn</span>  <span class="number"> 0.577  0.577  0.577</span>   <span class="comment"># normal index 1</span>
+<span class="keyword">vn</span>  <span class="number">-0.577 -0.577  0.577</span>   <span class="comment"># normal index 2</span></pre>
+
+        <h3>2.3 Face Definition (<code>f</code>)</h3>
+        <p>
+            A face line references vertices (and optionally normals) by their list index.
+            For a triangle, exactly three index groups are listed.
+            The two most common syntaxes you will encounter:
+        </p>
+        <pre><span class="comment"># Vertex indices only</span>
+<span class="keyword">f</span>  <span class="number">1 2 3</span>
+
+<span class="comment"># Vertex // Normal indices (no texture coordinate)</span>
+<span class="keyword">f</span>  <span class="number">1//1  2//2  3//1</span></pre>
+    </section>
+
+    <!-- SECTION 3: Indexing -->
+    <section>
+        <h2>3. The 1-Based Index Convention &mdash; Critical Implementation Note</h2>
+
+        <div class="danger">
+            <h4>⚠ Off-by-One Error: The Most Common .obj Parser Bug</h4>
+            <p>
+                The <code>.obj</code> format uses <strong>1-based indexing</strong>: the first vertex in the file has index <code>1</code>, not <code>0</code>.
+                Python lists and NumPy arrays use <strong>0-based indexing</strong>: the first element is at position <code>0</code>.
+                Failing to convert means every face lookup is shifted by one position, causing silent geometry corruption or an <code>IndexError</code> on the final vertex.
+            </p>
+        </div>
+
+        <p>
+            The conversion rule is simple and must be applied to <strong>every</strong> vertex and normal index read from an <code>f</code> line:
+        </p>
+
+        $$\text{python\_index} = \text{obj\_index} - 1$$
+
+        <div class="card">
+            <strong>Example — parsing a face line and applying the index shift:</strong>
+            <pre><span class="comment"># .obj file line:   f  3  7  12</span>
+<span class="comment">#                       ↓  ↓   ↓   subtract 1 from each</span>
+<span class="comment"># Python indices:       2  6  11</span>
+
+parts = line.split()          <span class="comment"># ["f", "3", "7", "12"]</span>
+face  = [int(p) - <span class="number">1</span> for p in parts[<span class="number">1</span>:]]   <span class="comment"># [2, 6, 11]</span>
+faces.append(face)</pre>
+        </div>
+
+        <p>
+            The same shift applies when the face uses the <code>v//vn</code> syntax — both the vertex index and the normal index must each have 1 subtracted:
+        </p>
+        <pre><span class="comment"># .obj file line:   f  1//2  3//1  5//2</span>
+<span class="comment"># Each token is split on "//" to separate vertex and normal refs</span>
+
+for token in parts[<span class="number">1</span>:]:
+    v_idx, vn_idx = token.split(<span class="number">"//"</span>)
+    vertex_indices.append(int(v_idx)  - <span class="number">1</span>)
+    normal_indices.append(int(vn_idx) - <span class="number">1</span>)</pre>
+    </section>
+
+    <!-- SECTION 4: Full annotated example -->
+    <section>
+        <h2>4. Annotated Full Example — Tetrahedron</h2>
+        <p>A complete <code>.obj</code> file for a tetrahedron, with every line annotated:</p>
+        <pre><span class="comment"># Tetrahedron — 4 vertices, 4 triangular faces</span>
+
+<span class="comment"># ── Vertices (1-based: v1 … v4) ──────────────────────────────</span>
+<span class="keyword">v</span>   <span class="number"> 1.0  1.0  1.0</span>
+<span class="keyword">v</span>   <span class="number">-1.0 -1.0  1.0</span>
+<span class="keyword">v</span>   <span class="number">-1.0  1.0 -1.0</span>
+<span class="keyword">v</span>   <span class="number"> 1.0 -1.0 -1.0</span>
+
+<span class="comment"># ── Normals (outward-facing per face) ────────────────────────</span>
+<span class="keyword">vn</span>  <span class="number"> 0.577  0.577  0.577</span>
+<span class="keyword">vn</span>  <span class="number">-0.577 -0.577  0.577</span>
+<span class="keyword">vn</span>  <span class="number">-0.577  0.577 -0.577</span>
+<span class="keyword">vn</span>  <span class="number"> 0.577 -0.577 -0.577</span>
+
+<span class="comment"># ── Faces (1-based vertex//normal refs) ──────────────────────</span>
+<span class="keyword">f</span>   <span class="number">2//1  3//1  4//1</span>    <span class="comment"># face 1 — opposite vertex 1</span>
+<span class="keyword">f</span>   <span class="number">1//2  4//2  3//2</span>    <span class="comment"># face 2 — opposite vertex 2</span>
+<span class="keyword">f</span>   <span class="number">1//3  2//3  4//3</span>    <span class="comment"># face 3 — opposite vertex 3</span>
+<span class="keyword">f</span>   <span class="number">1//4  3//4  2//4</span>    <span class="comment"># face 4 — opposite vertex 4</span></pre>
+
+        <div class="note">
+            <h4>Parser Checklist</h4>
+            <ul>
+                <li>Skip lines starting with <code>#</code> (comments) or blank lines.</li>
+                <li>Dispatch on the first token: <code>v</code>, <code>vn</code>, <code>f</code>.</li>
+                <li>On every index read from an <code>f</code> line, apply <code>index - 1</code> before storing.</li>
+                <li>Normalise <code>vn</code> vectors if smooth shading is required (exporters are not guaranteed to emit unit normals).</li>
+            </ul>
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>
