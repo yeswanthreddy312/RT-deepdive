@@ -117,6 +117,48 @@
             margin-top: 0.5rem;
             padding-left: 1.5rem;
         }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        p, li { font-size: 1.05rem; color: var(--text-muted); }
+
+        .viz-wrap {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .viz-wrap canvas { display: block; max-width: 100%; border-radius: 4px; }
+
+        .viz-controls { margin-top: 1rem; }
+
+        .viz-controls label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 0.4rem;
+        }
+
+        .viz-controls input[type="range"] { width: 100%; accent-color: #2563eb; }
+
+        .viz-readout {
+            font-family: monospace;
+            font-size: 0.82rem;
+            color: #10b981;
+            background: #0f172a;
+            padding: 0.4rem 0.75rem;
+            border-radius: 4px;
+            margin-top: 0.75rem;
+        }
     </style>
 </head>
 <body>
@@ -359,6 +401,215 @@
                 
                 <h3>Why this matters for your code</h3>
                 <p>If you actually tried to code the true physics of a wave propagating through a wall, your computer would crash trying to simulate billions of atomic dipole radiators. Instead, you use the macroscopic abstraction (\(v = c/n\)) and pretend the wave just smoothly "slows down."</p>
+            </div>
+        </details>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <section>
+        <h2>Module: Wavefront Mechanics, Diffraction Intuition &amp; Phase Smearing</h2>
+
+        <div class="card" style="margin-bottom: 1rem; border-left: 4px solid var(--primary);">
+            <p style="margin-top: 0;"><strong>Source:</strong> <a href="https://www.youtube.com/watch?v=IUVeqGijEHE" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none;">Wavefronts and Rays &mdash; Physics (Bozeman Science)</a></p>
+            <p style="margin-bottom: 0;"><strong>Video Summary:</strong> Visual breakdown bridging physical wave mechanics and geometric ray optics. Defines how rays are constructed as perpendicular vectors to expanding wavefronts.</p>
+        </div>
+
+        <div class="card" style="margin-bottom: 2rem; border-left: 4px solid var(--primary);">
+            <p style="margin-top: 0;"><strong>Source:</strong> <a href="https://www.youtube.com/watch?v=1bHipDSHVG4" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none;">Wave Diffraction Physics (Ripple Tank)</a></p>
+            <p style="margin-bottom: 0;"><strong>Video Summary:</strong> Physical water ripple tank proving how extending wavelength causes waves to wrap around barriers, while shortening wavelength creates sharp dead-zone shadows.</p>
+        </div>
+
+        <!-- INSIGHT 11 -->
+        <details>
+            <summary>11. What is a Wavefront &amp; The Bridge to Ray Tracing</summary>
+            <div class="resolution"><strong>Core Concept:</strong> A wavefront is the imaginary 3D surface connecting all points of a wave at the exact same phase. A "ray" is not a physical object — it is a mathematical arrow drawn perpendicular to that surface, pointing in the direction energy travels.</div>
+            <div class="full-text">
+                <h3>The Intuition</h3>
+                <p>Imagine freezing time while an antenna is transmitting. The electromagnetic wave is frozen in space. A <strong>wavefront</strong> is an imaginary 3D surface that connects all the points of the wave that are at the exact same phase &mdash; for example, all the peaks of the electric field. Think of dropping a pebble into a perfectly still pond. The expanding circular ripple traveling outward is a wavefront.</p>
+
+                <h3>The Bridge to Ray Tracing</h3>
+                <p><strong>Rays do not physically exist.</strong> A "ray" is purely a mathematical abstraction drawn strictly perpendicular (normal) to the wavefront, indicating the direction of energy travel. Two regimes emerge depending on distance from the source:</p>
+                <ul>
+                    <li><strong>Near-Field (Spherical wavefronts):</strong> Next to the antenna, wavefronts are expanding spheres. Rays point radially outward from the source in all directions. Power density falls off with the Inverse Square Law: \(P_d \propto 1/r^2\).</li>
+                    <li><strong>Far-Field (Plane wavefronts):</strong> Far from the source, the expanding sphere is so massive that any small section appears perfectly flat. Wavefronts become parallel planes and the rays become perfectly parallel to each other. This is the <strong>plane wave approximation</strong> used in all classical ray tracers.</li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- INSIGHT 12 -->
+        <details>
+            <summary>12. Diffraction Intuition &mdash; Wavelength vs. The Obstacle</summary>
+            <div class="resolution"><strong>Core Concept:</strong> Diffraction depends on the ratio of wavelength to the sharpness of the edge &mdash; not on wave "size" alone. A long wavelength wraps around corners; a short wavelength shoots straight past and casts a sharp shadow.</div>
+            <div class="full-text">
+                <h3>The Key Ratio</h3>
+                <p>Diffraction doesn't just happen because a wave is "big" or "small." It happens based on the ratio of the wavelength \(\lambda\) to the characteristic size of the obstacle or gap it encounters. The smaller this ratio, the sharper the shadow behind the obstacle.</p>
+
+                <h3>Low Frequency &mdash; 4G at 700 MHz</h3>
+                <p>Wavelength \(\lambda \approx 43\text{ cm}\). The wave is physically "thick" relative to building edges and urban obstacles. The Huygens wavelets spill easily over and around the edge, wrapping signal energy into the shadow zone. 4G signals famously penetrate into basements and around corners because of this efficient diffraction.</p>
+
+                <h3>High Frequency &mdash; 6G at 100 GHz</h3>
+                <p>Wavelength \(\lambda \approx 3\text{ mm}\). The building edge now acts like a massive wall relative to the wave. The wave shoots straight past, leaving a sharp, pitch-black radio shadow behind the obstacle with severe signal loss. 6G networks must compensate entirely via reflection paths and dense small-cell deployments because diffraction into shadow zones is near-zero.</p>
+            </div>
+        </details>
+
+        <!-- INSIGHT 13 -->
+        <details>
+            <summary>13. The Physics &mdash; Why Wavelength Kills the Shadow Signal</summary>
+            <div class="resolution"><strong>Correction on "Radial Spread":</strong> Every Huygens wavelet spreads perfectly spherically regardless of frequency. The shadow is not caused by a lack of spread &mdash; it is caused by <em>destructive interference driven by path length differences</em> (\(\Delta d\)). Short wavelengths amplify tiny path differences into massive phase shifts.</div>
+            <div class="full-text">
+                <h3>Path Length Difference &rarr; Phase Shift</h3>
+                <p>When two wavelets \(W_1\) and \(W_2\) both travel into the shadow zone, \(W_2\) travels a slightly longer path. That extra path length \(\Delta d\) translates directly to a phase shift at the receiver:</p>
+                $$\Delta \phi = \frac{2\pi}{\lambda} \cdot \Delta d$$
+                <p>This equation is the engine of the entire effect. The phase shift grows inversely with wavelength: <em>the shorter the wave, the more sensitive it is to path differences.</em></p>
+
+                <h3>Worked Example &mdash; \(\Delta d = 1.5\text{ cm}\)</h3>
+                <ul>
+                    <li>
+                        <strong>At 4G (\(\lambda = 43\text{ cm}\)):</strong>
+                        $$\Delta \phi = \frac{2\pi}{0.43} \times 0.015 \approx 0.22\text{ rad} \approx 13°$$
+                        The two wavelets are nearly perfectly in phase. They add together constructively, delivering a healthy combined signal into the shadow.
+                    </li>
+                    <li>
+                        <strong>At 6G (\(\lambda = 3\text{ mm}\)):</strong>
+                        $$\Delta \phi = \frac{2\pi}{0.003} \times 0.015 = 10\pi\text{ rad} = 1800°$$
+                        A tiny 1.5 cm detour causes a massive \(10\pi\) radian phase shift &mdash; the waves are completely scrambled. Destructive interference dominates.
+                    </li>
+                </ul>
+            </div>
+        </details>
+
+        <!-- INSIGHT 14 -->
+        <details>
+            <summary>14. Q&amp;A &mdash; Multiples of 2&pi; and Phase Smearing (The Real Killer)</summary>
+            <div class="resolution"><strong>User Question:</strong> "For high frequencies, even if the wave cycled multiple times, can't it arrive back in aligned phase? After cycling 2&pi; it is again at the same phase." &mdash; Mathematically yes at one exact point. But two physical realities make this useless in practice: the Spatial Barcode and Phase Smearing.</div>
+            <div class="full-text">
+                <h3>Reality 1 &mdash; The Spatial Barcode</h3>
+                <p>Yes, there exists a precise spot where two 6G wavelets arrive at a phase difference of exactly \(2\lambda\) (or \(4\lambda\), \(6\lambda\)...) and constructively interfere. But consider: moving your phone just <strong>1.5 mm</strong> (half a 6G wavelength) shifts the path to \(2.5\lambda\). The waves are now \(180°\) out of phase &mdash; a dead zone. At 4G, that same 1.5 mm move barely matters because the wavelength is 143 times larger.</p>
+                <p>The result is a microscopic, chaotic <strong>spatial barcode</strong>: alternating thin spikes of constructive interference and absolute dead zones, spaced only millimeters apart. A device moving at walking speed crosses hundreds of these per second, causing violent signal flickering that makes the link unreliable even where signal technically "exists."</p>
+
+                <h3>Reality 2 &mdash; Phase Smearing (The Real Killer)</h3>
+                <p>The spatial barcode concerns just two wavelets. Huygens' Principle dictates we must sum an <em>infinite</em> set of wavelets originating along the entire obstacle edge &mdash; each traveling a slightly different path length to the receiver.</p>
+                <ul>
+                    <li><strong>At low frequency (4G):</strong> All wavelets arrive with tiny phase offsets (\(0°, 2°, 5°, 8°...\)). They are nearly co-phasal. Their sum is a massive, high-amplitude signal.</li>
+                    <li><strong>At high frequency (6G):</strong> The wavelets arrive completely scrambled across every possible phase (\(0°, 90°, 180°, 270°, 360°, 45°...\)). When hundreds of waves uniformly distributed across the full \(360°\) phase circle are summed, they violently cancel to zero. This is <strong>Phase Smearing</strong>.</li>
+                </ul>
+                <p>The interactive visualizer below demonstrates this directly. At long wavelengths, the 5 individual wavelets are nearly aligned and their sum is large. As the frequency increases toward 6G, the phase offsets spread across the full circle and the total signal collapses to near-zero.</p>
+
+                <h3>Phase Smearing: The Multi-Wavelet Summation</h3>
+                <div class="viz-wrap">
+                    <canvas id="phaseSmearCanvas" width="820" height="600"></canvas>
+                    <div class="viz-controls">
+                        <label for="phaseSlider">Wavelength / Frequency &mdash; drag from Long (4G) to Short (6G):</label>
+                        <div style="display:flex; align-items:center; gap:0.75rem;">
+                            <span style="color:#94a3b8; font-size:0.85rem; white-space:nowrap;">Long &lambda; (4G)</span>
+                            <input type="range" id="phaseSlider" min="0" max="1" step="0.01" value="0" style="flex:1;">
+                            <span style="color:#94a3b8; font-size:0.85rem; white-space:nowrap;">Short &lambda; (6G)</span>
+                        </div>
+                        <div class="viz-readout" id="phaseReadout">f &approx; 700 MHz (4G) &nbsp; &lambda; &approx; 43 cm &nbsp; Phase spread: 0.00&pi; rad</div>
+                    </div>
+                </div>
+
+                <script>
+                (function () {
+                    const canvas  = document.getElementById('phaseSmearCanvas');
+                    const ctx     = canvas.getContext('2d');
+                    const slider  = document.getElementById('phaseSlider');
+                    const readout = document.getElementById('phaseReadout');
+                    const W = canvas.width, H = canvas.height;
+                    const N = 5;
+                    const COLORS = ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#c084fc'];
+                    const LW = 115;
+                    const ROW_H = 80, AMP_I = 24, Y0 = 48;
+
+                    function draw() {
+                        const t      = parseFloat(slider.value);
+                        const spread = t * 2 * Math.PI * (N - 1) / N;
+                        const phases = Array.from({length: N}, (_, i) => (i / (N - 1)) * spread);
+
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fillRect(0, 0, W, H);
+
+                        // vertical divider
+                        ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.moveTo(LW, 0); ctx.lineTo(LW, H); ctx.stroke();
+
+                        ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px monospace';
+                        ctx.fillText('WAVELETS', 4, 16);
+
+                        // Individual wavelets
+                        for (let w = 0; w < N; w++) {
+                            const cy = Y0 + w * ROW_H;
+
+                            if (w > 0) {
+                                ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+                                ctx.beginPath(); ctx.moveTo(0, cy - ROW_H / 2); ctx.lineTo(W, cy - ROW_H / 2); ctx.stroke();
+                            }
+
+                            ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 1;
+                            ctx.setLineDash([4, 4]);
+                            ctx.beginPath(); ctx.moveTo(LW, cy); ctx.lineTo(W - 8, cy); ctx.stroke();
+                            ctx.setLineDash([]);
+
+                            ctx.strokeStyle = COLORS[w]; ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            for (let x = LW; x <= W - 8; x++) {
+                                const theta = ((x - LW) / (W - 8 - LW)) * 4 * Math.PI;
+                                const y = cy - AMP_I * Math.sin(theta + phases[w]);
+                                x === LW ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                            }
+                            ctx.stroke();
+
+                            ctx.fillStyle = COLORS[w]; ctx.font = 'bold 12px monospace';
+                            ctx.fillText('W' + (w + 1), 6, cy - 6);
+                            ctx.fillStyle = '#94a3b8'; ctx.font = '10px monospace';
+                            ctx.fillText('φ=' + (phases[w] / Math.PI).toFixed(2) + 'π', 6, cy + 12);
+                        }
+
+                        // Sum section
+                        const SUM_SEP = Y0 + N * ROW_H + 10;
+                        const SUM_CY  = SUM_SEP + 52;
+                        const AMP_S   = 38;
+
+                        ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.moveTo(0, SUM_SEP); ctx.lineTo(W, SUM_SEP); ctx.stroke();
+
+                        ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px monospace';
+                        ctx.fillText('TOTAL SIGNAL', 4, SUM_SEP + 16);
+
+                        ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 1;
+                        ctx.setLineDash([4, 4]);
+                        ctx.beginPath(); ctx.moveTo(LW, SUM_CY); ctx.lineTo(W - 8, SUM_CY); ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        let maxAbs = 0;
+                        const pts = [];
+                        for (let x = LW; x <= W - 8; x++) {
+                            const theta = ((x - LW) / (W - 8 - LW)) * 4 * Math.PI;
+                            const raw = phases.reduce((s, p) => s + Math.sin(theta + p), 0) / N;
+                            if (Math.abs(raw) > maxAbs) maxAbs = Math.abs(raw);
+                            pts.push({x: x, y: SUM_CY - AMP_S * raw});
+                        }
+
+                        ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 3.5;
+                        ctx.beginPath();
+                        pts.forEach(function(p, i) { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
+                        ctx.stroke();
+
+                        const pct = Math.round(maxAbs * 100);
+                        const badgeCol = pct > 70 ? '#10b981' : pct > 35 ? '#f59e0b' : '#ef4444';
+                        ctx.fillStyle = badgeCol; ctx.font = 'bold 13px sans-serif';
+                        ctx.fillText('Peak: ' + pct + '%', LW + 8, SUM_CY + AMP_S + 22);
+
+                        const freqGHz = 0.7 + t * 99.3;
+                        const freqStr   = t < 0.05 ? '700 MHz (4G)' : t > 0.95 ? '100 GHz (6G)' : freqGHz.toFixed(0) + ' GHz';
+                        const lambdaStr = t < 0.05 ? '43 cm' : t > 0.95 ? '3 mm' : (30 / freqGHz).toFixed(1) + ' cm';
+                        readout.textContent = 'f ≈ ' + freqStr + '   λ ≈ ' + lambdaStr + '   Phase spread: ' + (spread / Math.PI).toFixed(2) + 'π rad';
+                    }
+
+                    slider.addEventListener('input', draw);
+                    draw();
+                }());
+                </script>
             </div>
         </details>
     </section>
