@@ -388,22 +388,6 @@
                 <h3>Huygens-Fresnel Principle</h3>
                 <p>Every unobstructed point on a primary wavefront acts as a secondary, localized source of spherical wavelets. The forward envelope of all these wavelets synthesizes the next wavefront position. When a wavefront encounters a sharp obstacle edge (e.g., a building corner), it geometrically blocks some secondary sources. The remaining unblocked wavelets continue to expand radially &mdash; including <em>inward</em> behind the geometric boundary &mdash; bending signal power directly into the "shadow zone" that classical geometric optics would predict to be completely dark.</p>
 
-                <h3>Frequency Scaling of Diffraction Efficiency</h3>
-                <p>Wavelength \(\lambda\) directly dictates how efficiently edges bend signals:</p>
-                <ul>
-                    <li><strong>Low frequencies (~700 MHz, \(\lambda \approx 43\text{ cm}\)):</strong> Wavelengths are comparable to or larger than urban macro-structures. Diffraction is smooth and efficient &mdash; signals bend readily around buildings and terrain obstacles.</li>
-                    <li><strong>Next-gen high frequencies (6G sub-THz ~100 GHz, \(\lambda \approx 3\text{ mm}\)):</strong> Wavelengths become tiny relative to all structural features. Diffraction efficiency drops to near-zero, casting deep, knife-edge radio shadow zones with sharply defined boundaries and severe signal loss behind them.</li>
-                </ul>
-
-                <h3>Computational Shortcut: Uniform Theory of Diffraction (UTD)</h3>
-                <p>Full wave integration across the aperture is computationally intractable at ray-tracing scale. The <strong>UTD</strong> provides an efficient geometric approximation by treating diffraction as a local phenomenon at the edge:</p>
-                <ol>
-                    <li>Model the physical obstacle edge as a 3D geometric line vector in the scene.</li>
-                    <li>When an incident ray intersects this edge line, compute a localized <strong>diffraction coefficient tensor</strong> \(\mathbf{D}\) (dependent on geometry, frequency, polarization, and material).</li>
-                    <li>Project a continuous spatial <strong>Keller Cone</strong> of secondary diffracted rays around the edge axis &mdash; all emerging at the same polar angle from the edge as the incident ray, but spread across all azimuthal directions, wrapping around the obstacle corner profile.</li>
-                </ol>
-                <p>This collapses the full aperture integral to a single local calculation per edge intersection, making diffraction tractable in large-scale urban ray tracing simulations.</p>
-
                 <h3>The Intuition: Wavelength vs. The Obstacle</h3>
                 <p>Diffraction doesn't just happen because a wave is "big" or "small." It happens based on the ratio of the wavelength to the sharpness of the edge.</p>
                 <ul>
@@ -414,6 +398,49 @@
                 <div class="card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--primary);">
                     <p style="margin-top: 0;"><strong>Source:</strong> <a href="https://www.youtube.com/watch?v=1bHipDSHVG4" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none;">Wave Diffraction Physics (Ripple Tank)</a></p>
                     <p style="margin-bottom: 0;"><strong>Video Summary:</strong> Physical water ripple tank proving how extending wavelength causes waves to wrap around barriers, while shortening wavelength creates sharp dead-zone shadows.</p>
+                </div>
+
+                <div class="widget-container" style="border: 1px solid #333; border-radius: 8px; padding: 15px; background: #1a1a1a; margin-bottom: 2rem; color: #fff;">
+                    <h4 style="margin-top: 0; color: #fff;">Interactive: Wavelength vs. The Obstacle</h4>
+                    <label style="font-weight: bold; color: #ccc;">Wavelength: </label>
+                    <input type="range" id="waveScaleSlider" min="0" max="100" value="100" style="width: 200px; vertical-align: middle;">
+                    <span id="waveScaleLabel" style="display:inline-block; width: 120px; color: #3498db; font-weight: bold;">Long (4G)</span>
+                    <canvas id="rippleCanvas" width="600" height="300" style="width: 100%; max-width: 600px; background: #0d0d0d; border: 1px solid #444; margin-top: 15px; border-radius: 4px; display: block;"></canvas>
+                    <script>
+                    (function() {
+                        const canvas = document.getElementById('rippleCanvas'); const ctx = canvas.getContext('2d');
+                        const slider = document.getElementById('waveScaleSlider'); const label = document.getElementById('waveScaleLabel');
+                        let time = 0;
+                        function render() {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            let t = slider.value / 100;
+                            label.innerText = t > 0.7 ? "Long (4G)" : (t < 0.3 ? "Short (6G)" : "Medium");
+                            label.style.color = t > 0.7 ? "#3498db" : "#e74c3c";
+                            ctx.fillStyle = '#444'; ctx.shadowBlur = 15; ctx.shadowColor = '#000';
+                            ctx.fillRect(0, 150, 300, 150); ctx.shadowBlur = 0;
+                            ctx.strokeStyle = '#fff'; ctx.globalAlpha = 0.5; ctx.setLineDash([5, 5]);
+                            ctx.beginPath(); ctx.moveTo(300, 150); ctx.lineTo(600, 150); ctx.stroke(); ctx.setLineDash([]);
+                            ctx.fillStyle = '#888'; ctx.font = '14px Arial'; ctx.globalAlpha = 1.0;
+                            ctx.fillText("Lit Zone", 450, 50); ctx.fillText("Shadow Zone", 450, 250);
+                            let spacing = 8 + (t * 25); let phase = (time * 25) % spacing;
+                            ctx.lineWidth = 2;
+                            for (let x = phase; x < 600; x += spacing) {
+                                ctx.strokeStyle = `hsl(204, 70%, ${50 - (x/600)*20}%)`;
+                                ctx.beginPath();
+                                if (x < 300) { ctx.moveTo(x, 0); ctx.lineTo(x, 150); } else { ctx.moveTo(x, 0); ctx.lineTo(x, 300); }
+                                ctx.stroke();
+                            }
+                            let maxAngle = 0.05 + (t * (Math.PI / 2 - 0.05));
+                            ctx.strokeStyle = '#e74c3c';
+                            for (let r = phase; r < 400; r += spacing) {
+                                ctx.globalAlpha = Math.max(0, 1 - (r/400));
+                                ctx.beginPath(); ctx.arc(300, 150, r, 0, maxAngle); ctx.stroke();
+                            }
+                            ctx.globalAlpha = 1.0; time += 0.05; requestAnimationFrame(render);
+                        }
+                        render();
+                    })();
+                    </script>
                 </div>
 
                 <h3>The Physics: Why Wavelength Kills the Shadow Signal</h3>
@@ -433,122 +460,110 @@
                     <p class="a"><strong>2. Phase Smearing (The Real Killer):</strong> We don't sum two wavelets — Huygens' Principle says we sum <em>infinite</em> wavelets along the edge. At 4G, all arrive with tiny phase offsets (0°, 2°, 5°) and add massively. At 6G, wavelets arrive completely scrambled across every phase (0°, 90°, 180°, 270°…). Summing hundreds of waves uniformly distributed across the full 360° phase circle gives zero. The interactive visualizer below demonstrates this collapse directly.</p>
                 </div>
 
-                <h3>Phase Smearing: The Multi-Wavelet Summation</h3>
-                <div class="viz-wrap">
-                    <canvas id="psCanvas" width="820" height="600"></canvas>
-                    <div class="viz-controls">
-                        <label for="psSlider">Wavelength / Frequency &mdash; drag from Long (4G) to Short (6G):</label>
-                        <div style="display:flex; align-items:center; gap:0.75rem;">
-                            <span style="color:#94a3b8; font-size:0.85rem; white-space:nowrap;">Long &lambda; (4G)</span>
-                            <input type="range" id="psSlider" min="0" max="1" step="0.01" value="0" style="flex:1;">
-                            <span style="color:#94a3b8; font-size:0.85rem; white-space:nowrap;">Short &lambda; (6G)</span>
-                        </div>
-                        <div class="viz-readout" id="psReadout">f &approx; 700 MHz (4G) &nbsp;&nbsp; &lambda; &approx; 43 cm &nbsp;&nbsp; Phase spread: 0.00&pi; rad</div>
-                    </div>
+                <div class="widget-container" style="border: 1px solid #333; border-radius: 8px; padding: 15px; background: #1a1a1a; margin-bottom: 2rem; color: #fff;">
+                    <h4 style="margin-top: 0; color: #fff;">Interactive: The Spatial Barcode</h4>
+                    <label style="color: #ccc;">Network: </label>
+                    <select id="barcodeFreq" style="padding: 5px; background: #333; color: #fff; border: none; border-radius: 4px;">
+                        <option value="4G">4G (700 MHz)</option>
+                        <option value="6G">6G (100 GHz)</option>
+                    </select>
+                    <br><br>
+                    <label style="color: #ccc;">Move Phone: </label>
+                    <input type="range" id="barcodePos" min="0" max="100" value="0" style="width: 200px; vertical-align: middle;">
+                    <span id="barcodeLabel" style="font-weight: bold; color: #f1c40f;">0.0 mm</span>
+                    <canvas id="barcodeCanvas" width="600" height="150" style="width: 100%; max-width: 600px; background: #0d0d0d; border: 1px solid #444; margin-top: 15px; border-radius: 4px; display: block;"></canvas>
+                    <script>
+                    (function() {
+                        const cvs = document.getElementById('barcodeCanvas'); const ctx = cvs.getContext('2d');
+                        const pos = document.getElementById('barcodePos'); const freq = document.getElementById('barcodeFreq');
+                        const lbl = document.getElementById('barcodeLabel');
+                        let time = 0;
+                        function render() {
+                            ctx.clearRect(0, 0, cvs.width, cvs.height);
+                            let is6G = freq.value === "6G";
+                            let offset = (pos.value / 100) * 10;
+                            lbl.innerText = offset.toFixed(1) + " mm";
+                            let lambda = is6G ? 3.0 : 430.0;
+                            let phaseShift = (2 * Math.PI / lambda) * offset;
+                            let totalAmp = 0;
+                            for (let x = 0; x < cvs.width; x+=10) {
+                                let t = (x * 0.05) - time;
+                                totalAmp = Math.max(totalAmp, Math.abs(Math.sin(t) + Math.sin(t + phaseShift)));
+                            }
+                            let barWidth = (totalAmp / 2.0) * (cvs.width - 40);
+                            ctx.fillStyle = '#333'; ctx.fillRect(20, 50, cvs.width - 40, 40);
+                            ctx.shadowBlur = 15;
+                            if(totalAmp > 1.0) { ctx.fillStyle = '#2ecc71'; ctx.shadowColor = '#2ecc71'; }
+                            else { ctx.fillStyle = '#e74c3c'; ctx.shadowColor = '#e74c3c'; }
+                            ctx.fillRect(20, 50, barWidth, 40);
+                            ctx.shadowBlur = 0;
+                            ctx.fillStyle = '#fff'; ctx.font = '14px Arial';
+                            ctx.fillText("Signal Strength", 20, 40);
+                            time += 0.05; requestAnimationFrame(render);
+                        }
+                        render();
+                    })();
+                    </script>
                 </div>
 
-                <script>
-                (function () {
-                    var canvas  = document.getElementById('psCanvas');
-                    var ctx     = canvas.getContext('2d');
-                    var slider  = document.getElementById('psSlider');
-                    var readout = document.getElementById('psReadout');
-                    var W = canvas.width, H = canvas.height;
-                    var N = 5;
-                    var COLORS = ['#60a5fa','#34d399','#fbbf24','#f87171','#c084fc'];
-                    var LW = 115, ROW_H = 80, AMP_I = 24, Y0 = 48;
-
-                    function draw() {
-                        var t      = parseFloat(slider.value);
-                        var spread = t * 2 * Math.PI * (N - 1) / N;
-                        var phases = [];
-                        for (var i = 0; i < N; i++) phases.push((i / (N - 1)) * spread);
-
-                        ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-
-                        ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
-                        ctx.beginPath(); ctx.moveTo(LW, 0); ctx.lineTo(LW, H); ctx.stroke();
-
-                        ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px monospace';
-                        ctx.fillText('WAVELETS', 4, 16);
-
-                        for (var w = 0; w < N; w++) {
-                            var cy = Y0 + w * ROW_H;
-                            if (w > 0) {
-                                ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
-                                ctx.beginPath(); ctx.moveTo(0, cy - ROW_H/2); ctx.lineTo(W, cy - ROW_H/2); ctx.stroke();
+                <h3>Phase Smearing: The Multi-Wavelet Summation</h3>
+                <div class="widget-container" style="border: 1px solid #333; border-radius: 8px; padding: 15px; background: #1a1a1a; margin-bottom: 2rem; color: #fff;">
+                    <h4 style="margin-top: 0; color: #fff;">Interactive: Phase Smearing</h4>
+                    <label style="font-weight: bold; color: #ccc;">Wavelength: </label>
+                    <input type="range" id="waveSlider" min="0" max="100" value="0" style="width: 200px; vertical-align: middle;">
+                    <span id="waveLabel" style="display:inline-block; width: 120px; color:#3498db; font-weight:bold;">Long (4G)</span>
+                    <canvas id="smearCanvas" width="600" height="300" style="width: 100%; max-width: 600px; background: #0d0d0d; border: 1px solid #444; margin-top: 15px; border-radius: 4px; display: block;"></canvas>
+                    <script>
+                    (function() {
+                        const canvas = document.getElementById('smearCanvas'); const ctx = canvas.getContext('2d');
+                        const slider = document.getElementById('waveSlider'); const label = document.getElementById('waveLabel');
+                        let time = 0;
+                        function render() {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            let t = slider.value / 100;
+                            label.innerText = t < 0.3 ? "Long (4G)" : (t > 0.7 ? "Short (6G)" : "Medium");
+                            label.style.color = t < 0.3 ? "#3498db" : "#e74c3c";
+                            let phaseMultiplier = 0.05 + (t * 2.5);
+                            let sumArray = new Array(canvas.width).fill(0);
+                            const waveColors = ['#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22'];
+                            ctx.lineWidth = 1.5;
+                            for (let w = 0; w < 5; w++) {
+                                let phaseShift = w * phaseMultiplier;
+                                ctx.strokeStyle = waveColors[w]; ctx.globalAlpha = 0.6;
+                                ctx.beginPath();
+                                for (let x = 0; x < canvas.width; x++) {
+                                    let yVal = Math.sin((x * 0.05) - time + phaseShift) * 15;
+                                    sumArray[x] += yVal;
+                                    let yDraw = 60 + yVal;
+                                    if (x === 0) ctx.moveTo(x, yDraw); else ctx.lineTo(x, yDraw);
+                                }
+                                ctx.stroke();
                             }
-                            ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 1;
-                            ctx.setLineDash([4, 4]);
-                            ctx.beginPath(); ctx.moveTo(LW, cy); ctx.lineTo(W - 8, cy); ctx.stroke();
-                            ctx.setLineDash([]);
-
-                            ctx.strokeStyle = COLORS[w]; ctx.lineWidth = 2;
+                            ctx.globalAlpha = 1.0; ctx.strokeStyle = '#3498db'; ctx.lineWidth = 3;
+                            ctx.shadowBlur = 10; ctx.shadowColor = '#3498db';
                             ctx.beginPath();
-                            for (var x = LW; x <= W - 8; x++) {
-                                var theta = ((x - LW) / (W - 8 - LW)) * 4 * Math.PI;
-                                var y = cy - AMP_I * Math.sin(theta + phases[w]);
-                                x === LW ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                            for (let x = 0; x < canvas.width; x++) {
+                                let yDraw = 200 + sumArray[x];
+                                if (x === 0) ctx.moveTo(x, yDraw); else ctx.lineTo(x, yDraw);
                             }
-                            ctx.stroke();
-
-                            ctx.fillStyle = COLORS[w]; ctx.font = 'bold 12px monospace';
-                            ctx.fillText('W' + (w + 1), 6, cy - 6);
-                            ctx.fillStyle = '#94a3b8'; ctx.font = '10px monospace';
-                            ctx.fillText('φ=' + (phases[w] / Math.PI).toFixed(2) + 'π', 6, cy + 12);
+                            ctx.stroke(); ctx.shadowBlur = 0;
+                            ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+                            ctx.beginPath(); ctx.moveTo(0, 130); ctx.lineTo(canvas.width, 130); ctx.stroke();
+                            ctx.fillStyle = '#aaa'; ctx.font = '12px Arial';
+                            ctx.fillText("5 Diffracted Wavelets", 10, 20);
+                            ctx.fillText("Total Received Signal (Constructive vs Destructive)", 10, 150);
+                            time += 0.05; requestAnimationFrame(render);
                         }
-
-                        var SUM_SEP = Y0 + N * ROW_H + 10;
-                        var SUM_CY  = SUM_SEP + 52;
-                        var AMP_S   = 38;
-
-                        ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2;
-                        ctx.beginPath(); ctx.moveTo(0, SUM_SEP); ctx.lineTo(W, SUM_SEP); ctx.stroke();
-
-                        ctx.fillStyle = '#64748b'; ctx.font = 'bold 10px monospace';
-                        ctx.fillText('TOTAL SIGNAL', 4, SUM_SEP + 16);
-
-                        ctx.strokeStyle = '#1e3a5f'; ctx.lineWidth = 1;
-                        ctx.setLineDash([4, 4]);
-                        ctx.beginPath(); ctx.moveTo(LW, SUM_CY); ctx.lineTo(W - 8, SUM_CY); ctx.stroke();
-                        ctx.setLineDash([]);
-
-                        var maxAbs = 0, pts = [];
-                        for (var x = LW; x <= W - 8; x++) {
-                            var theta = ((x - LW) / (W - 8 - LW)) * 4 * Math.PI;
-                            var raw = 0;
-                            for (var j = 0; j < N; j++) raw += Math.sin(theta + phases[j]);
-                            raw /= N;
-                            if (Math.abs(raw) > maxAbs) maxAbs = Math.abs(raw);
-                            pts.push({x: x, y: SUM_CY - AMP_S * raw});
-                        }
-
-                        ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 3.5;
-                        ctx.beginPath();
-                        pts.forEach(function (p, i) { i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y); });
-                        ctx.stroke();
-
-                        var pct = Math.round(maxAbs * 100);
-                        ctx.fillStyle = pct > 70 ? '#10b981' : pct > 35 ? '#f59e0b' : '#ef4444';
-                        ctx.font = 'bold 13px sans-serif';
-                        ctx.fillText('Peak: ' + pct + '%', LW + 8, SUM_CY + AMP_S + 22);
-
-                        var freqGHz   = 0.7 + t * 99.3;
-                        var freqStr   = t < 0.05 ? '700 MHz (4G)' : t > 0.95 ? '100 GHz (6G)' : freqGHz.toFixed(0) + ' GHz';
-                        var lambdaStr = t < 0.05 ? '43 cm' : t > 0.95 ? '3 mm' : (30 / freqGHz).toFixed(1) + ' cm';
-                        readout.textContent = 'f ≈ ' + freqStr + '   λ ≈ ' + lambdaStr + '   Phase spread: ' + (spread / Math.PI).toFixed(2) + 'π rad';
-                    }
-
-                    slider.addEventListener('input', draw);
-                    draw();
-                }());
-                </script>
+                        render();
+                    })();
+                    </script>
+                </div>
             </div>
         </details>
 
-        <!-- INSIGHT 13 -->
+        <!-- INSIGHT 14 -->
         <details>
-            <summary>13. Surface Roughness &amp; Diffuse Scattering (BRDF)</summary>
+            <summary>14. Surface Roughness &amp; Diffuse Scattering (BRDF)</summary>
             <div class="resolution"><strong>Core Concept:</strong> The Rayleigh Criterion determines whether a surface acts as a specular mirror or a diffuse scatterer. For millimeter-wave 6G signals, virtually all common building materials violate the smoothness threshold and shatter specular reflections into diffuse paths.</div>
             <div class="full-text">
                 <h3>Rayleigh Roughness Criterion</h3>
@@ -572,11 +587,20 @@
                 <p>When \(S = 0\), the model degenerates to a pure Fresnel specular mirror. When \(S = 1\), all reflected power is scattered diffusely. Empirically measured values include: glass \(S \approx 0.1\), brick \(S \approx 0.5\text{&ndash;}0.7\), rough concrete \(S \approx 0.8\).</p>
             </div>
         </details>
-        <!-- INSIGHT 14 -->
+        <!-- INSIGHT 13 -->
         <details>
-            <summary>14. The Mathematical Engine: Uniform Theory of Diffraction (UTD)</summary>
+            <summary>13. The Mathematical Engine: Uniform Theory of Diffraction (UTD)</summary>
             <div class="resolution"><strong>Core Concept:</strong> UTD replaces the computationally impossible full wave integral with a local geometric calculation. One incident ray shatters into a Keller Cone of secondary rays. The master equation \(\mathbf{E}_d(s) = \mathbf{E}_i(Q_e) \cdot \mathbf{D} \cdot A(s) \cdot e^{-jks}\) computes the exact electric field of any single diffracted ray at distance \(s\) from the edge.</div>
             <div class="full-text">
+
+                <h3>Computational Shortcut: Uniform Theory of Diffraction (UTD)</h3>
+                <p>Full wave integration across the aperture is computationally intractable at ray-tracing scale. The <strong>UTD</strong> provides an efficient geometric approximation by treating diffraction as a local phenomenon at the edge:</p>
+                <ol>
+                    <li>Model the physical obstacle edge as a 3D geometric line vector in the scene.</li>
+                    <li>When an incident ray intersects this edge line, compute a localized <strong>diffraction coefficient tensor</strong> \(\mathbf{D}\) (dependent on geometry, frequency, polarization, and material).</li>
+                    <li>Project a continuous spatial <strong>Keller Cone</strong> of secondary diffracted rays around the edge axis &mdash; all emerging at the same polar angle from the edge as the incident ray, but spread across all azimuthal directions, wrapping around the obstacle corner profile.</li>
+                </ol>
+                <p>This collapses the full aperture integral to a single local calculation per edge intersection, making diffraction tractable in large-scale urban ray tracing simulations.</p>
 
                 <h3>From Wave Integration to Geometric Ray Event</h3>
                 <p>Simulating billions of Huygens wavelets is computationally impossible for a Digital Twin. In the 1960s, Joseph Keller invented the Geometrical Theory of Diffraction (GTD) &mdash; later refined into UTD to fix mathematical singularities at shadow boundaries. UTD treats diffraction not as a wave phenomenon, but as a <strong>local geometric ray event</strong>.</p>
@@ -657,49 +681,57 @@
                     <li><strong>Drone high in the sky (\(\beta_0 = 30°\)):</strong> Ray points steeply downward. Diffracted rays continue that downward momentum, fanning into a sharp downward-pointing cone locked at 30&deg; from the edge axis.</li>
                 </ul>
 
-                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
-                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: The Keller Cone (Fixed Edge)</h4>
-                    <label for="betaSlider" style="color: var(--text-muted);">Incident Angle (&beta;<sub>0</sub>): </label>
+                <div class="widget-container" style="border: 1px solid #333; border-radius: 8px; padding: 15px; background: #1a1a1a; margin-bottom: 2rem; color: #fff;">
+                    <h4 style="margin-top: 0; color: #fff;">Interactive: The Keller Cone (Fixed Edge)</h4>
+                    <label style="color: #ccc;">Incident Angle (&beta;<sub>0</sub>): </label>
                     <input type="range" id="betaSlider" min="20" max="90" value="45" style="width: 200px; vertical-align: middle;">
-                    <span id="betaLabel" style="font-weight: bold; margin-left: 8px;">45&deg;</span>
-                    <canvas id="kellerCanvas" width="600" height="300" style="background: #0f172a; border-radius: 4px; display: block; margin-top: 12px; max-width: 100%;"></canvas>
+                    <span id="betaLabel" style="font-weight:bold; color:#3498db;">45&deg;</span>
+                    <canvas id="kellerCanvas" width="600" height="350" style="background: #0d0d0d; border-radius: 4px; display: block; margin-top: 15px; border: 1px solid #444; width: 100%; max-width: 600px;"></canvas>
                     <script>
-                    (function () {
-                        var cvs = document.getElementById('kellerCanvas');
-                        var ctx = cvs.getContext('2d');
-                        var slider = document.getElementById('betaSlider');
-                        var lbl = document.getElementById('betaLabel');
+                    (function(){
+                        const cvs = document.getElementById('kellerCanvas'); const ctx = cvs.getContext('2d');
+                        const slider = document.getElementById('betaSlider'); const label = document.getElementById('betaLabel');
                         function draw() {
                             ctx.clearRect(0,0,cvs.width,cvs.height);
-                            var beta = parseInt(slider.value);
-                            lbl.textContent = beta + '°';
-                            var cx = cvs.width/2, cy = cvs.height/2;
+                            let beta = parseInt(slider.value); label.innerHTML = beta + "&deg;";
+                            let cx = cvs.width/2; let cy = cvs.height/2 - 20;
+                            // Background glow
+                            let bgGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 200);
+                            bgGlow.addColorStop(0, 'rgba(52, 152, 219, 0.1)'); bgGlow.addColorStop(1, 'transparent');
+                            ctx.fillStyle = bgGlow; ctx.fillRect(0,0,cvs.width,cvs.height);
                             // Edge
-                            ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 3;
-                            ctx.beginPath(); ctx.moveTo(cx, 20); ctx.lineTo(cx, 280); ctx.stroke();
-                            ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
-                            ctx.fillText('Edge (ê)', cx + 8, 28);
-                            // Incident ray
-                            var bRad = beta * Math.PI / 180;
-                            var iLen = 100;
-                            var iX = cx - iLen * Math.sin(bRad), iY = cy - iLen * Math.cos(bRad);
-                            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
-                            ctx.beginPath(); ctx.moveTo(iX, iY); ctx.lineTo(cx, cy); ctx.stroke();
-                            ctx.fillStyle = '#ef4444'; ctx.font = '11px monospace';
-                            ctx.fillText('Incident Ray (β₀=' + beta + '°)', iX - 95, iY - 6);
-                            // Keller cone
-                            var cLen = 120;
-                            var rX = cLen * Math.sin(bRad), rY = cLen * Math.cos(bRad) * 0.28;
-                            var tY = cy + cLen * Math.cos(bRad);
-                            ctx.strokeStyle = '#3b82f6'; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.5;
-                            ctx.beginPath(); ctx.ellipse(cx, tY, rX, rY, 0, 0, 2*Math.PI); ctx.stroke();
-                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - rX, tY); ctx.stroke();
-                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + rX, tY); ctx.stroke();
-                            ctx.globalAlpha = 1;
-                            ctx.fillStyle = '#3b82f6'; ctx.font = '11px monospace';
-                            ctx.fillText('Keller Cone', cx + rX + 6, tY);
+                            ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.shadowBlur = 10; ctx.shadowColor = '#fff';
+                            ctx.beginPath(); ctx.moveTo(cx, 20); ctx.lineTo(cx, cvs.height - 20); ctx.stroke(); ctx.shadowBlur = 0;
+                            ctx.fillStyle = '#aaa'; ctx.font = '12px monospace';
+                            ctx.fillText('Edge (ê)', cx + 8, 34);
+                            // Incident Ray (animated dashes)
+                            let betaRad = beta * Math.PI / 180; let incL = 140;
+                            let incX = cx - incL * Math.sin(betaRad); let incY = cy - incL * Math.cos(betaRad);
+                            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3; ctx.setLineDash([10, 5]); ctx.lineDashOffset = -Date.now()/50;
+                            ctx.beginPath(); ctx.moveTo(incX, incY); ctx.lineTo(cx, cy); ctx.stroke(); ctx.setLineDash([]);
+                            ctx.fillStyle = '#e74c3c';
+                            ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2); ctx.fill();
+                            ctx.fillStyle = '#e74c3c'; ctx.font = '12px monospace';
+                            ctx.fillText('Incident Ray (β₀=' + beta + '°)', incX - 10, incY - 8);
+                            // Keller Cone Volume
+                            let coneL = 160;
+                            let rX = coneL * Math.sin(betaRad); let rY = (coneL * Math.cos(betaRad)) * 0.35;
+                            let tipY = cy + coneL * Math.cos(betaRad);
+                            let coneGrad = ctx.createLinearGradient(cx - rX, 0, cx + rX, 0);
+                            coneGrad.addColorStop(0, 'rgba(52, 152, 219, 0.1)');
+                            coneGrad.addColorStop(0.5, 'rgba(52, 152, 219, 0.5)');
+                            coneGrad.addColorStop(1, 'rgba(52, 152, 219, 0.1)');
+                            ctx.fillStyle = coneGrad; ctx.strokeStyle = 'rgba(52, 152, 219, 0.8)'; ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(cx, cy); ctx.lineTo(cx - rX, tipY);
+                            ctx.ellipse(cx, tipY, rX, rY, 0, Math.PI, 0, true);
+                            ctx.lineTo(cx, cy); ctx.fill();
+                            ctx.beginPath(); ctx.ellipse(cx, tipY, rX, rY, 0, 0, 2*Math.PI); ctx.stroke();
+                            ctx.fillStyle = '#3498db'; ctx.font = '12px monospace';
+                            ctx.fillText('Keller Cone', cx + rX + 6, tipY + 4);
+                            requestAnimationFrame(draw);
                         }
-                        slider.addEventListener('input', draw); draw();
+                        draw();
                     }());
                     </script>
                 </div>
@@ -714,50 +746,48 @@
                     </ul>
                 </div>
 
-                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
-                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: 1:1 vs 1:&infin; Mapping</h4>
-                    <label style="color: var(--text-muted);">Hit Target: </label>
-                    <select id="mapMode" style="padding: 5px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                <div class="widget-container" style="border: 1px solid #333; border-radius: 8px; padding: 15px; background: #1a1a1a; margin-bottom: 2rem; color: #fff;">
+                    <h4 style="margin-top: 0; color: #fff;">Interactive: 1:1 vs 1:&infin; Mapping</h4>
+                    <label style="color:#ccc;">Hit Target: </label>
+                    <select id="mapMode" style="padding: 5px; background: #333; color: #fff; border: none; border-radius: 4px;">
                         <option value="reflect">Flat Wall (Reflection 1:1)</option>
                         <option value="diffract">Sharp Edge (Diffraction 1:&infin;)</option>
                     </select>
-                    <canvas id="mapCanvas" width="600" height="250" style="background: #1e293b; border-radius: 4px; display: block; margin-top: 12px; max-width: 100%;"></canvas>
+                    <canvas id="mapCanvas" width="600" height="300" style="background: #0d0d0d; border-radius: 4px; display: block; margin-top: 15px; border: 1px solid #444; width: 100%; max-width: 600px;"></canvas>
                     <script>
-                    (function () {
-                        var cvs = document.getElementById('mapCanvas');
-                        var ctx = cvs.getContext('2d');
-                        var mode = document.getElementById('mapMode');
+                    (function(){
+                        const cvs = document.getElementById('mapCanvas'); const ctx = cvs.getContext('2d');
+                        const mode = document.getElementById('mapMode');
                         function draw() {
                             ctx.clearRect(0,0,cvs.width,cvs.height);
-                            var cx = cvs.width/2, cy = cvs.height/2;
-                            if (mode.value === 'reflect') {
-                                ctx.fillStyle = '#475569'; ctx.fillRect(cx - 100, cy, 200, 100);
-                                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
-                                ctx.beginPath(); ctx.moveTo(cx - 80, cy - 80); ctx.lineTo(cx, cy); ctx.stroke();
-                                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
-                                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 80, cy - 80); ctx.stroke();
-                                ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif';
-                                ctx.fillText('1 Ray In', cx - 130, cy - 55);
-                                ctx.fillText('1 Ray Out', cx + 50, cy - 55);
-                                ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif';
-                                ctx.fillText('Flat Wall (2D surface)', cx - 55, cy + 60);
+                            let cx = cvs.width/2; let cy = cvs.height/2;
+                            if(mode.value === 'reflect') {
+                                ctx.fillStyle = '#444'; ctx.shadowBlur = 20; ctx.shadowColor = '#000';
+                                ctx.fillRect(cx - 120, cy - 20, 240, 150); ctx.shadowBlur = 0;
+                                ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
+                                ctx.beginPath(); ctx.moveTo(cx - 100, cy - 100); ctx.lineTo(cx, cy-20); ctx.stroke();
+                                ctx.strokeStyle = '#2ecc71'; ctx.shadowBlur = 10; ctx.shadowColor = '#2ecc71';
+                                ctx.beginPath(); ctx.moveTo(cx, cy-20); ctx.lineTo(cx + 100, cy - 100); ctx.stroke(); ctx.shadowBlur=0;
+                                ctx.fillStyle = '#aaa'; ctx.font = '13px Arial';
+                                ctx.fillText('1 Ray In', cx - 130, cy - 65);
+                                ctx.fillText('1 Ray Out', cx + 50, cy - 65);
                             } else {
-                                ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 4;
-                                ctx.beginPath(); ctx.moveTo(cx, cy - 90); ctx.lineTo(cx, cy + 90); ctx.stroke();
-                                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
-                                ctx.beginPath(); ctx.moveTo(cx - 90, cy - 45); ctx.lineTo(cx, cy); ctx.stroke();
-                                ctx.strokeStyle = '#3b82f6'; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5;
-                                ctx.beginPath(); ctx.ellipse(cx, cy + 55, 85, 20, 0, 0, 2*Math.PI); ctx.stroke();
-                                for (var i = -80; i <= 80; i += 18) {
-                                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + i, cy + 55); ctx.stroke();
+                                ctx.strokeStyle = '#fff'; ctx.lineWidth = 5; ctx.shadowBlur = 15; ctx.shadowColor = '#fff';
+                                ctx.beginPath(); ctx.moveTo(cx, cy - 100); ctx.lineTo(cx, cy + 100); ctx.stroke(); ctx.shadowBlur=0;
+                                ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 3;
+                                ctx.beginPath(); ctx.moveTo(cx - 100, cy - 50); ctx.lineTo(cx, cy); ctx.stroke();
+                                let grd = ctx.createLinearGradient(cx - 100, 0, cx + 100, 0);
+                                grd.addColorStop(0, 'rgba(52, 152, 219, 0.1)'); grd.addColorStop(0.5, 'rgba(52, 152, 219, 0.6)'); grd.addColorStop(1, 'rgba(52, 152, 219, 0.1)');
+                                ctx.fillStyle = grd; ctx.beginPath();
+                                ctx.moveTo(cx, cy); ctx.lineTo(cx - 100, cy + 80); ctx.ellipse(cx, cy+80, 100, 30, 0, Math.PI, 0, true); ctx.lineTo(cx, cy); ctx.fill();
+                                ctx.strokeStyle = 'rgba(52, 152, 219, 0.8)'; ctx.lineWidth = 1;
+                                for(let i=-100; i<=100; i+=25) {
+                                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + i, cy + 80 + Math.sin(Math.acos(i/100))*30); ctx.stroke();
                                 }
-                                ctx.globalAlpha = 1;
-                                ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif';
+                                ctx.fillStyle = '#aaa'; ctx.font = '13px Arial';
                                 ctx.fillText('1 Ray In', cx - 130, cy - 25);
-                                ctx.fillStyle = '#3b82f6'; ctx.font = '12px sans-serif';
-                                ctx.fillText('∞ Rays Out  →  Keller Cone', cx - 70, cy + 90);
-                                ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif';
-                                ctx.fillText('Sharp Edge (1D line)', cx - 50, cy - 100);
+                                ctx.fillStyle = '#3498db'; ctx.font = '13px Arial';
+                                ctx.fillText('∞ Rays Out → Keller Cone', cx - 80, cy + 120);
                             }
                         }
                         mode.addEventListener('change', draw); draw();
@@ -773,39 +803,38 @@
                     <li><strong>The Singularity (\(\beta_0 \to 0°\)):</strong> Multiplier &rarr; \(\infty\). Cone squeezes to a line. Engine safety catch required: <code>if beta_0 &lt; 1.0 &times; (π/180): skip_diffraction()</code>.</li>
                 </ul>
 
-                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
-                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: The Energy Squeeze (1 / sin(&beta;<sub>0</sub>))</h4>
-                    <label for="squeezeSlider" style="color: var(--text-muted);">Incident Angle (&beta;<sub>0</sub>): </label>
+                <div class="widget-container" style="border: 1px solid #333; border-radius: 8px; padding: 15px; background: #1a1a1a; margin-bottom: 2rem; color: #fff;">
+                    <h4 style="margin-top: 0; color: #fff;">Interactive: The Energy Squeeze (1 / sin(&beta;<sub>0</sub>))</h4>
+                    <label style="color:#ccc;">Incident Angle (&beta;<sub>0</sub>): </label>
                     <input type="range" id="squeezeSlider" min="5" max="90" value="90" style="width: 200px; vertical-align: middle;">
-                    <p id="squeezeText" style="font-weight: bold; color: #ef4444; margin: 8px 0;"></p>
-                    <canvas id="squeezeCanvas" width="600" height="200" style="background: #0f172a; border-radius: 4px; display: block; max-width: 100%;"></canvas>
+                    <p id="squeezeText" style="font-weight: bold; color: #e74c3c; font-size: 1.1em;"></p>
+                    <canvas id="squeezeCanvas" width="600" height="250" style="background: #0d0d0d; border-radius: 4px; display: block; border: 1px solid #444; width: 100%; max-width: 600px;"></canvas>
                     <script>
-                    (function () {
-                        var cvs = document.getElementById('squeezeCanvas');
-                        var ctx = cvs.getContext('2d');
-                        var slider = document.getElementById('squeezeSlider');
-                        var txt = document.getElementById('squeezeText');
+                    (function(){
+                        const cvs = document.getElementById('squeezeCanvas'); const ctx = cvs.getContext('2d');
+                        const slider = document.getElementById('squeezeSlider'); const text = document.getElementById('squeezeText');
                         function draw() {
                             ctx.clearRect(0,0,cvs.width,cvs.height);
-                            var beta = parseInt(slider.value);
-                            var mult = 1 / Math.sin(beta * Math.PI / 180);
-                            txt.innerHTML = 'At &beta;<sub>0</sub> = ' + beta + '&deg;,  Multiplier = ' + mult.toFixed(2) + '&times;';
-                            ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
-                            ctx.beginPath();
-                            for (var x = 5; x <= 90; x++) {
-                                var y = 1 / Math.sin(x * Math.PI / 180);
-                                var pX = ((90 - x) / 85) * cvs.width;
-                                var pY = cvs.height - (y * 20);
-                                x === 5 ? ctx.moveTo(pX, pY) : ctx.lineTo(pX, pY);
+                            let beta = parseInt(slider.value);
+                            let mult = 1 / Math.sin(beta * Math.PI / 180);
+                            text.innerHTML = `At &beta;<sub>0</sub> = ${beta}&deg; &rarr; Multiplier = <span style="color:#2ecc71;">${mult.toFixed(2)}x</span>`;
+                            ctx.strokeStyle = '#444'; ctx.lineWidth=1;
+                            for(let i=0; i<5; i++) {
+                                let gridY = cvs.height - (i*40);
+                                ctx.beginPath(); ctx.moveTo(0, gridY); ctx.lineTo(cvs.width, gridY); ctx.stroke();
                             }
-                            ctx.stroke();
-                            var dY = cvs.height - (mult * 20);
-                            var dX = ((90 - beta) / 85) * cvs.width;
-                            ctx.fillStyle = '#ef4444';
-                            ctx.beginPath(); ctx.arc(dX, dY, 6, 0, 2*Math.PI); ctx.fill();
-                            ctx.fillStyle = '#64748b'; ctx.font = '11px monospace';
-                            ctx.fillText('β₀ → 90° (normal)', 10, cvs.height - 6);
-                            ctx.fillText('β₀ → 0° (grazing)', cvs.width - 140, cvs.height - 6);
+                            ctx.strokeStyle = '#3498db'; ctx.lineWidth = 4; ctx.shadowBlur = 15; ctx.shadowColor = '#3498db';
+                            ctx.beginPath();
+                            for(let x=5; x<=90; x++) {
+                                let y = 1 / Math.sin(x * Math.PI / 180);
+                                let plotX = ((90 - x) / 85) * cvs.width;
+                                let plotY = cvs.height - (y * 20);
+                                if(x===5) ctx.moveTo(plotX, plotY); else ctx.lineTo(plotX, plotY);
+                            }
+                            ctx.stroke(); ctx.shadowBlur = 0;
+                            let dotY = cvs.height - (mult * 20); let dotX = ((90 - beta) / 85) * cvs.width;
+                            ctx.fillStyle = '#e74c3c'; ctx.shadowBlur = 15; ctx.shadowColor = '#e74c3c';
+                            ctx.beginPath(); ctx.arc(dotX, dotY, 8, 0, 2*Math.PI); ctx.fill(); ctx.shadowBlur=0;
                         }
                         slider.addEventListener('input', draw); draw();
                     }());
@@ -825,56 +854,48 @@
                     <li><strong>Deep in the Shadow:</strong> As \(\phi\) moves past the ISB toward Face N, the Fresnel integrals collapse toward zero, recreating the radio shadow.</li>
                 </ol>
 
-                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
-                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: ISB &amp; Diffracted Azimuth (&phi;)</h4>
-                    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-                        <label style="color: var(--text-muted);">Incoming (&phi;'): <input type="range" id="phiIncSlider" min="10" max="170" value="45" style="width: 140px;"></label>
-                        <label style="color: var(--text-muted);">Diffracted (&phi;): <input type="range" id="phiOutSlider" min="0" max="270" value="200" style="width: 140px;"></label>
+                <div class="widget-container" style="border: 1px solid #333; border-radius: 8px; padding: 15px; background: #1a1a1a; margin-bottom: 2rem; color: #fff;">
+                    <h4 style="margin-top: 0; color: #fff;">Interactive: ISB &amp; Diffracted Azimuth (&phi;)</h4>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <label>Incoming Ray (&phi;'): <input type="range" id="phiIncSlider" min="10" max="170" value="45"></label>
+                        <label>Diffracted Ray (&phi;): <input type="range" id="phiOutSlider" min="0" max="270" value="200"></label>
                     </div>
-                    <p id="isbState" style="font-weight: bold; margin: 8px 0;"></p>
-                    <canvas id="isbCanvas" width="600" height="300" style="background: #f1f5f9; border-radius: 4px; display: block; max-width: 100%;"></canvas>
+                    <p id="isbState" style="font-weight: bold; font-size: 1.1em; text-align: center; margin: 10px 0;"></p>
+                    <canvas id="isbCanvas" width="600" height="300" style="background: #0d0d0d; border-radius: 4px; display: block; border: 1px solid #444; width: 100%; max-width: 600px;"></canvas>
                     <script>
-                    (function () {
-                        var cvs = document.getElementById('isbCanvas');
-                        var ctx = cvs.getContext('2d');
-                        var sInc = document.getElementById('phiIncSlider');
-                        var sOut = document.getElementById('phiOutSlider');
-                        var st = document.getElementById('isbState');
+                    (function(){
+                        const cvs = document.getElementById('isbCanvas'); const ctx = cvs.getContext('2d');
+                        const sInc = document.getElementById('phiIncSlider'); const sOut = document.getElementById('phiOutSlider');
+                        const stateTxt = document.getElementById('isbState');
                         function draw() {
                             ctx.clearRect(0,0,cvs.width,cvs.height);
-                            var cx = cvs.width/2, cy = cvs.height/2;
-                            var pIn = parseInt(sInc.value), pOut = parseInt(sOut.value);
-                            var isb = 180 + pIn;
-                            if (pOut < isb - 5) { st.innerHTML = 'Zone: Lit (Interference with Direct Signal)'; st.style.color = '#16a34a'; }
-                            else if (pOut > isb + 5) { st.innerHTML = 'Zone: Shadow (Exponential Decay)'; st.style.color = '#dc2626'; }
-                            else { st.innerHTML = 'Zone: ISB Transition (Fresnel Spike)'; st.style.color = '#d97706'; }
+                            let cx = cvs.width/2; let cy = cvs.height/2 + 30;
+                            let pIn = parseInt(sInc.value); let pOut = parseInt(sOut.value);
+                            let isb = 180 + pIn;
+                            if(pOut < isb - 5) { stateTxt.innerHTML = "Zone: LIT (Interference with Direct Signal)"; stateTxt.style.color = '#2ecc71'; }
+                            else if(pOut > isb + 5) { stateTxt.innerHTML = "Zone: SHADOW (Exponential Decay)"; stateTxt.style.color = '#e74c3c'; }
+                            else { stateTxt.innerHTML = "Zone: ISB TRANSITION (High Energy Spike)"; stateTxt.style.color = '#f39c12'; }
+                            // Lit Zone Shading
+                            ctx.fillStyle = 'rgba(46, 204, 113, 0.1)';
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, 300, 0, -(isb*Math.PI/180), true); ctx.fill();
+                            // Shadow Zone Shading
+                            ctx.fillStyle = 'rgba(231, 76, 60, 0.1)';
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, 300, -(isb*Math.PI/180), Math.PI/2, true); ctx.fill();
                             // Building
-                            ctx.fillStyle = '#cbd5e1';
-                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+200, cy); ctx.lineTo(cx+200, cy+200); ctx.lineTo(cx, cy+200); ctx.closePath(); ctx.fill();
-                            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
-                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+200, cy); ctx.stroke();
-                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy+200); ctx.stroke();
-                            ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif';
-                            ctx.fillText('Building', cx + 70, cy + 100);
-                            // ISB
-                            ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([5,5]); ctx.lineWidth = 2;
-                            var isbRad = isb * Math.PI / 180;
-                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 200*Math.cos(isbRad), cy - 200*Math.sin(isbRad)); ctx.stroke();
-                            ctx.setLineDash([]);
-                            ctx.fillStyle = '#64748b'; ctx.font = '11px monospace';
-                            ctx.fillText('ISB', cx + 205*Math.cos(isbRad) - 8, cy - 205*Math.sin(isbRad));
-                            // Incoming
-                            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5;
-                            var inRad = pIn * Math.PI / 180;
-                            ctx.beginPath(); ctx.moveTo(cx + 160*Math.cos(inRad), cy - 160*Math.sin(inRad)); ctx.lineTo(cx, cy); ctx.stroke();
-                            ctx.fillStyle = '#ef4444'; ctx.font = '11px monospace';
-                            ctx.fillText("φ'=" + pIn + '°', cx + 165*Math.cos(inRad) - 10, cy - 165*Math.sin(inRad));
-                            // Outgoing
-                            ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5;
-                            var outRad = pOut * Math.PI / 180;
-                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 160*Math.cos(outRad), cy - 160*Math.sin(outRad)); ctx.stroke();
-                            ctx.fillStyle = '#3b82f6'; ctx.font = '11px monospace';
-                            ctx.fillText('φ=' + pOut + '°', cx + 165*Math.cos(outRad), cy - 165*Math.sin(outRad));
+                            ctx.fillStyle = '#444'; ctx.shadowBlur=15; ctx.shadowColor='#000';
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 300, cy); ctx.lineTo(cx+300, cy+300); ctx.lineTo(cx, cy+300); ctx.fill(); ctx.shadowBlur=0;
+                            // ISB Line
+                            ctx.strokeStyle = '#f39c12'; ctx.setLineDash([8,8]); ctx.lineWidth = 2;
+                            let isbRad = isb * Math.PI / 180;
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 300*Math.cos(isbRad), cy - 300*Math.sin(isbRad)); ctx.stroke(); ctx.setLineDash([]);
+                            // Incoming Ray
+                            ctx.strokeStyle = '#e74c3c'; ctx.lineWidth = 4; ctx.shadowBlur=10; ctx.shadowColor='#e74c3c';
+                            let inRad = pIn * Math.PI / 180;
+                            ctx.beginPath(); ctx.moveTo(cx + 200*Math.cos(inRad), cy - 200*Math.sin(inRad)); ctx.lineTo(cx, cy); ctx.stroke(); ctx.shadowBlur=0;
+                            // Outgoing Ray
+                            ctx.strokeStyle = '#3498db'; ctx.lineWidth = 4; ctx.shadowBlur=10; ctx.shadowColor='#3498db';
+                            let outRad = pOut * Math.PI / 180;
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 200*Math.cos(outRad), cy - 200*Math.sin(outRad)); ctx.stroke(); ctx.shadowBlur=0;
                         }
                         sInc.addEventListener('input', draw); sOut.addEventListener('input', draw); draw();
                     }());
