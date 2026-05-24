@@ -173,6 +173,28 @@
 
         .qa-block .q { font-weight: 700; color: #0369a1; margin-bottom: 0.4rem; }
         .qa-block .a { color: var(--text-muted); }
+
+        .impl-callout {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-left: 4px solid #2563eb;
+            padding: 0.85rem 1.1rem;
+            border-radius: 0 6px 6px 0;
+            margin: 1.25rem 0;
+        }
+
+        .impl-callout .impl-label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            color: #2563eb;
+            margin-bottom: 0.35rem;
+        }
+
+        .impl-callout h4 { margin: 0.3rem 0 0.5rem; color: #1e40af; }
+        .impl-callout ol, .impl-callout ul { margin-top: 0.4rem; padding-left: 1.4rem; color: var(--text-muted); }
+        .impl-callout p { color: var(--text-muted); margin: 0.3rem 0; }
     </style>
 </head>
 <body>
@@ -548,6 +570,391 @@
                     <li><strong>Diffuse power fraction:</strong> \(R \cdot S\) &mdash; scales a directive spatial power lobe centered along the geometric specular reflection track, spreading energy around it.</li>
                 </ul>
                 <p>When \(S = 0\), the model degenerates to a pure Fresnel specular mirror. When \(S = 1\), all reflected power is scattered diffusely. Empirically measured values include: glass \(S \approx 0.1\), brick \(S \approx 0.5\text{&ndash;}0.7\), rough concrete \(S \approx 0.8\).</p>
+            </div>
+        </details>
+        <!-- INSIGHT 14 -->
+        <details>
+            <summary>14. The Mathematical Engine: Uniform Theory of Diffraction (UTD)</summary>
+            <div class="resolution"><strong>Core Concept:</strong> UTD replaces the computationally impossible full wave integral with a local geometric calculation. One incident ray shatters into a Keller Cone of secondary rays. The master equation \(\mathbf{E}_d(s) = \mathbf{E}_i(Q_e) \cdot \mathbf{D} \cdot A(s) \cdot e^{-jks}\) computes the exact electric field of any single diffracted ray at distance \(s\) from the edge.</div>
+            <div class="full-text">
+
+                <h3>From Wave Integration to Geometric Ray Event</h3>
+                <p>Simulating billions of Huygens wavelets is computationally impossible for a Digital Twin. In the 1960s, Joseph Keller invented the Geometrical Theory of Diffraction (GTD) &mdash; later refined into UTD to fix mathematical singularities at shadow boundaries. UTD treats diffraction not as a wave phenomenon, but as a <strong>local geometric ray event</strong>.</p>
+                <p>When a single ray hits an edge, it does not bounce off as a single ray; it shatters into an infinite cone of secondary rays called the <strong>Keller Cone</strong>. The master equation for the electric field \(\mathbf{E}_d\) of any one diffracted ray along that cone at distance \(s\) from the edge:</p>
+                $$\mathbf{E}_d(s) = \mathbf{E}_i(Q_e) \cdot \mathbf{D} \cdot A(s) \cdot e^{-jks}$$
+
+                <h3>1. \(\mathbf{E}_i(Q_e)\): The Incident Field</h3>
+                <p>The complex electric field vector of the ray at the exact edge coordinate \(Q_e\) at the exact instant it strikes. It encodes both the amplitude and phase of the incoming wave and serves as the seed for all diffracted rays on the Keller Cone.</p>
+
+                <h3>2. \(\mathbf{D}\): The Diffraction Coefficient Tensor</h3>
+                <p>The heaviest computational lifting in the engine. \(\mathbf{D}\) is a \(2 \times 2\) dyadic matrix that governs how much energy bleeds into the shadow zone based on polarization:</p>
+                $$\mathbf{D} = \begin{bmatrix} -D_s & 0 \\ 0 & -D_h \end{bmatrix}$$
+                <ul>
+                    <li><strong>\(D_s\) (Soft Boundary):</strong> Diffraction coefficient for the electric field polarized <em>parallel</em> to the edge.</li>
+                    <li><strong>\(D_h\) (Hard Boundary):</strong> Diffraction coefficient for the electric field polarized <em>perpendicular</em> to the edge.</li>
+                </ul>
+
+                <h3>3. \(A(s)\): The Spatial Attenuation Factor</h3>
+                <p>When the ray hits the edge, energy spreads along the Keller Cone surface. As the cone expands, energy density drops. For a spherical wave from a point source hitting the edge:</p>
+                $$A(s) = \sqrt{\frac{\rho_e}{s(\rho_e + s)}}$$
+                <p>where \(\rho_e\) is the radius of curvature of the incident wavefront at the edge. As \(s \to \infty\), \(A(s) \approx \frac{1}{\sqrt{s}}\), recovering cylindrical wave spreading.</p>
+
+                <h3>4. \(e^{-jks}\): The Phase Shift</h3>
+                <p>The phase tracker, where \(k = \frac{2\pi}{\lambda}\). This term gives the diffracted ray its exact phase angle at the receiver so it can mathematically interfere &mdash; constructively or destructively &mdash; with all other multipath rays. This links directly to <code>Ray.phase_angle</code> in the engine.</p>
+
+                <h3>Q&amp;A: What Exactly is an Edge?</h3>
+                <div class="qa-block">
+                    <p class="q">Q: "What exactly is an edge... is it the one facing the wave or say the small surface parallel to the incident wave?"</p>
+                    <p class="a"><strong>In UTD, an edge has exactly zero width.</strong> It is an idealized, mathematically perfect <strong>1D line</strong> in 3D space where two 2D planes intersect:</p>
+                    <ul class="a">
+                        <li><strong>Face 0 (Illuminated Face):</strong> The flat wall facing the incoming wave.</li>
+                        <li><strong>Face N (Shadow Face):</strong> The flat side-wall around the corner.</li>
+                        <li><strong>The Edge (\(\hat{\mathbf{e}}\)):</strong> The infinitesimal razor-thin line connecting the two walls. If a wave hits a "small surface," that is just another wall (BRDF reflection). <strong>Diffraction only triggers when a ray mathematically collides with that 1D boundary line.</strong></li>
+                    </ul>
+                </div>
+
+                <div class="impl-callout">
+                    <p class="impl-label">Tracing Implementation &mdash; Digital-Twin Engine</p>
+                    <h4>How the Engine Sees It</h4>
+                    <p>In <code>engine/intersection.py</code>, the engine does not look for tiny surfaces. An edge is defined strictly by mesh vertices:</p>
+                    <ol>
+                        <li><strong>The Polygons:</strong> Load the building as a mesh of triangles.</li>
+                        <li><strong>The Adjacency:</strong> Find two triangles sharing exactly two vertices \(V_1\) and \(V_2\).</li>
+                        <li><strong>The Edge Vector:</strong> The edge is the vector from \(V_1\) to \(V_2\). Ray hits face → call Reflection. Ray hits the shared line → call UTD, compute wedge angle, shatter into Keller Cone.</li>
+                    </ol>
+                </div>
+
+                <h3>Q&amp;A: Are Incident Fields Vectors?</h3>
+                <div class="qa-block">
+                    <p class="q">Q: "From the equation I understand the terms but what about \(\mathbf{E}_i(Q_e)\) as vectors... are they vectors... the traditional s &amp; p we see in reflection?"</p>
+                    <p class="a">Yes, \(\mathbf{E}_i(Q_e)\) is a full 3D complex vector. But the reference plane is different from reflection. In UTD it is the <strong>edge-fixed plane of incidence</strong> containing the incoming ray \(\hat{\mathbf{s}}'\) and the edge line \(\hat{\mathbf{e}}\):</p>
+                    <ul class="a">
+                        <li><strong>Soft Polarization (\(E_{is}\)):</strong> \(\mathbf{E}\) parallel to the edge-fixed plane &rarr; multiplied by \(-D_s\).</li>
+                        <li><strong>Hard Polarization (\(E_{ih}\)):</strong> \(\mathbf{E}\) perpendicular to the edge-fixed plane &rarr; multiplied by \(-D_h\).</li>
+                    </ul>
+                </div>
+
+                <div class="impl-callout">
+                    <p class="impl-label">Tracing Implementation &mdash; Digital-Twin Engine</p>
+                    <h4>How the Python Engine Handles This</h4>
+                    <p>When the ray hits the edge, the code projects the incoming \(\mathbf{E}_i\) into the two edge-fixed components:</p>
+                    $$\mathbf{E}_i = E_{is} \hat{\mathbf{u}}_s + E_{ih} \hat{\mathbf{u}}_h$$
+                    <p>Apply the \(\mathbf{D}\) matrix to get \(\mathbf{E}_d\), then recombine back into global (x, y, z) coordinates.</p>
+                </div>
+
+                <h3>The Dependencies of \(D_s\) and \(D_h\)</h3>
+                <p>The Python engine computes \(D_s\) and \(D_h\) from three physical inputs:</p>
+                <ol>
+                    <li><strong>The Wedge Angle (\(n\)):</strong> Exterior angle of the corner defined as \(n\pi\). A standard 90&deg; brick corner leaves 270&deg; of exterior space, so \(n = 1.5\).</li>
+                    <li><strong>The Wavelength (\(\lambda\)):</strong> \(D_{s,h} \propto \frac{1}{\sqrt{k}}\). As frequency rises to 6G, \(k\) becomes massive, collapsing the diffraction coefficients toward zero and casting sharp millimeter-wave shadows.</li>
+                    <li><strong>The Angle of Incidence (\(\beta_0\)):</strong> The 3D angle between the incoming ray \(\hat{\mathbf{s}}'\) and the edge \(\hat{\mathbf{e}}\). The Keller Cone law: diffracted rays must exit at this exact same angle \(\beta_0\).</li>
+                </ol>
+
+                <h3>The Fixed-Edge Keller Cone Geometry</h3>
+                <p>Imagine standing next to a vertical skyscraper corner with a drone transmitting to the edge:</p>
+                <ul>
+                    <li><strong>Drone at ground level (\(\beta_0 = 90°\)):</strong> Ray is horizontal. Diffracted rays leave at 90&deg;, forming a perfectly flat 2D disk fanning around the corner.</li>
+                    <li><strong>Drone high in the sky (\(\beta_0 = 30°\)):</strong> Ray points steeply downward. Diffracted rays continue that downward momentum, fanning into a sharp downward-pointing cone locked at 30&deg; from the edge axis.</li>
+                </ul>
+
+                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
+                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: The Keller Cone (Fixed Edge)</h4>
+                    <label for="betaSlider" style="color: var(--text-muted);">Incident Angle (&beta;<sub>0</sub>): </label>
+                    <input type="range" id="betaSlider" min="20" max="90" value="45" style="width: 200px; vertical-align: middle;">
+                    <span id="betaLabel" style="font-weight: bold; margin-left: 8px;">45&deg;</span>
+                    <canvas id="kellerCanvas" width="600" height="300" style="background: #0f172a; border-radius: 4px; display: block; margin-top: 12px; max-width: 100%;"></canvas>
+                    <script>
+                    (function () {
+                        var cvs = document.getElementById('kellerCanvas');
+                        var ctx = cvs.getContext('2d');
+                        var slider = document.getElementById('betaSlider');
+                        var lbl = document.getElementById('betaLabel');
+                        function draw() {
+                            ctx.clearRect(0,0,cvs.width,cvs.height);
+                            var beta = parseInt(slider.value);
+                            lbl.textContent = beta + '°';
+                            var cx = cvs.width/2, cy = cvs.height/2;
+                            // Edge
+                            ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 3;
+                            ctx.beginPath(); ctx.moveTo(cx, 20); ctx.lineTo(cx, 280); ctx.stroke();
+                            ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
+                            ctx.fillText('Edge (ê)', cx + 8, 28);
+                            // Incident ray
+                            var bRad = beta * Math.PI / 180;
+                            var iLen = 100;
+                            var iX = cx - iLen * Math.sin(bRad), iY = cy - iLen * Math.cos(bRad);
+                            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+                            ctx.beginPath(); ctx.moveTo(iX, iY); ctx.lineTo(cx, cy); ctx.stroke();
+                            ctx.fillStyle = '#ef4444'; ctx.font = '11px monospace';
+                            ctx.fillText('Incident Ray (β₀=' + beta + '°)', iX - 95, iY - 6);
+                            // Keller cone
+                            var cLen = 120;
+                            var rX = cLen * Math.sin(bRad), rY = cLen * Math.cos(bRad) * 0.28;
+                            var tY = cy + cLen * Math.cos(bRad);
+                            ctx.strokeStyle = '#3b82f6'; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.5;
+                            ctx.beginPath(); ctx.ellipse(cx, tY, rX, rY, 0, 0, 2*Math.PI); ctx.stroke();
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - rX, tY); ctx.stroke();
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + rX, tY); ctx.stroke();
+                            ctx.globalAlpha = 1;
+                            ctx.fillStyle = '#3b82f6'; ctx.font = '11px monospace';
+                            ctx.fillText('Keller Cone', cx + rX + 6, tY);
+                        }
+                        slider.addEventListener('input', draw); draw();
+                    }());
+                    </script>
+                </div>
+
+                <h3>Q&amp;A: Reflection vs. Diffraction Mapping</h3>
+                <div class="qa-block">
+                    <p class="q">Q: "Comparing with reflection... for a surface, incident and reflected angles are a one-to-one map. For an edge we get a one-to-infinite distribution map...?"</p>
+                    <p class="a">You perfectly deduced <strong>Keller&rsquo;s Law of Edge Diffraction</strong>:</p>
+                    <ul class="a">
+                        <li><strong>Reflection (1-to-1 Map):</strong> Ray hits a 2D surface. Math locks the outgoing ray to a single path. Input: 1 Ray &rarr; Output: 1 Ray.</li>
+                        <li><strong>Diffraction (1-to-&infin; Map):</strong> Ray hits a 1D line. It loses a spatial restriction. Energy shatters across the entire Keller Cone surface. Input: 1 Ray &rarr; Output: &infin; Rays.</li>
+                    </ul>
+                </div>
+
+                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
+                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: 1:1 vs 1:&infin; Mapping</h4>
+                    <label style="color: var(--text-muted);">Hit Target: </label>
+                    <select id="mapMode" style="padding: 5px; border-radius: 4px; border: 1px solid #cbd5e1;">
+                        <option value="reflect">Flat Wall (Reflection 1:1)</option>
+                        <option value="diffract">Sharp Edge (Diffraction 1:&infin;)</option>
+                    </select>
+                    <canvas id="mapCanvas" width="600" height="250" style="background: #1e293b; border-radius: 4px; display: block; margin-top: 12px; max-width: 100%;"></canvas>
+                    <script>
+                    (function () {
+                        var cvs = document.getElementById('mapCanvas');
+                        var ctx = cvs.getContext('2d');
+                        var mode = document.getElementById('mapMode');
+                        function draw() {
+                            ctx.clearRect(0,0,cvs.width,cvs.height);
+                            var cx = cvs.width/2, cy = cvs.height/2;
+                            if (mode.value === 'reflect') {
+                                ctx.fillStyle = '#475569'; ctx.fillRect(cx - 100, cy, 200, 100);
+                                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+                                ctx.beginPath(); ctx.moveTo(cx - 80, cy - 80); ctx.lineTo(cx, cy); ctx.stroke();
+                                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
+                                ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 80, cy - 80); ctx.stroke();
+                                ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif';
+                                ctx.fillText('1 Ray In', cx - 130, cy - 55);
+                                ctx.fillText('1 Ray Out', cx + 50, cy - 55);
+                                ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif';
+                                ctx.fillText('Flat Wall (2D surface)', cx - 55, cy + 60);
+                            } else {
+                                ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 4;
+                                ctx.beginPath(); ctx.moveTo(cx, cy - 90); ctx.lineTo(cx, cy + 90); ctx.stroke();
+                                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2;
+                                ctx.beginPath(); ctx.moveTo(cx - 90, cy - 45); ctx.lineTo(cx, cy); ctx.stroke();
+                                ctx.strokeStyle = '#3b82f6'; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.5;
+                                ctx.beginPath(); ctx.ellipse(cx, cy + 55, 85, 20, 0, 0, 2*Math.PI); ctx.stroke();
+                                for (var i = -80; i <= 80; i += 18) {
+                                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + i, cy + 55); ctx.stroke();
+                                }
+                                ctx.globalAlpha = 1;
+                                ctx.fillStyle = '#94a3b8'; ctx.font = '12px sans-serif';
+                                ctx.fillText('1 Ray In', cx - 130, cy - 25);
+                                ctx.fillStyle = '#3b82f6'; ctx.font = '12px sans-serif';
+                                ctx.fillText('∞ Rays Out  →  Keller Cone', cx - 70, cy + 90);
+                                ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif';
+                                ctx.fillText('Sharp Edge (1D line)', cx - 50, cy - 100);
+                            }
+                        }
+                        mode.addEventListener('change', draw); draw();
+                    }());
+                    </script>
+                </div>
+
+                <h3>The Energy Squeeze: The \(\frac{1}{\sin(\beta_0)}\) Multiplier</h3>
+                <p>Both \(D_s\) and \(D_h\) contain this exact leading term: \(D_{s,h} \propto \frac{1}{\sin(\beta_0)}\).</p>
+                <ul>
+                    <li><strong>Normal Incidence (\(\beta_0 = 90°\)):</strong> Multiplier = 1. Wide, flat disk. Energy maximally diffused &mdash; baseline minimum for \(D_{s,h}\).</li>
+                    <li><strong>Grazing Incidence (\(\beta_0 = 30°\)):</strong> Multiplier = 2. Cone collapses into a tight "party hat." Same energy squeezed into a smaller surface &mdash; local intensity spikes.</li>
+                    <li><strong>The Singularity (\(\beta_0 \to 0°\)):</strong> Multiplier &rarr; \(\infty\). Cone squeezes to a line. Engine safety catch required: <code>if beta_0 &lt; 1.0 &times; (π/180): skip_diffraction()</code>.</li>
+                </ul>
+
+                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
+                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: The Energy Squeeze (1 / sin(&beta;<sub>0</sub>))</h4>
+                    <label for="squeezeSlider" style="color: var(--text-muted);">Incident Angle (&beta;<sub>0</sub>): </label>
+                    <input type="range" id="squeezeSlider" min="5" max="90" value="90" style="width: 200px; vertical-align: middle;">
+                    <p id="squeezeText" style="font-weight: bold; color: #ef4444; margin: 8px 0;"></p>
+                    <canvas id="squeezeCanvas" width="600" height="200" style="background: #0f172a; border-radius: 4px; display: block; max-width: 100%;"></canvas>
+                    <script>
+                    (function () {
+                        var cvs = document.getElementById('squeezeCanvas');
+                        var ctx = cvs.getContext('2d');
+                        var slider = document.getElementById('squeezeSlider');
+                        var txt = document.getElementById('squeezeText');
+                        function draw() {
+                            ctx.clearRect(0,0,cvs.width,cvs.height);
+                            var beta = parseInt(slider.value);
+                            var mult = 1 / Math.sin(beta * Math.PI / 180);
+                            txt.innerHTML = 'At &beta;<sub>0</sub> = ' + beta + '&deg;,  Multiplier = ' + mult.toFixed(2) + '&times;';
+                            ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            for (var x = 5; x <= 90; x++) {
+                                var y = 1 / Math.sin(x * Math.PI / 180);
+                                var pX = ((90 - x) / 85) * cvs.width;
+                                var pY = cvs.height - (y * 20);
+                                x === 5 ? ctx.moveTo(pX, pY) : ctx.lineTo(pX, pY);
+                            }
+                            ctx.stroke();
+                            var dY = cvs.height - (mult * 20);
+                            var dX = ((90 - beta) / 85) * cvs.width;
+                            ctx.fillStyle = '#ef4444';
+                            ctx.beginPath(); ctx.arc(dX, dY, 6, 0, 2*Math.PI); ctx.fill();
+                            ctx.fillStyle = '#64748b'; ctx.font = '11px monospace';
+                            ctx.fillText('β₀ → 90° (normal)', 10, cvs.height - 6);
+                            ctx.fillText('β₀ → 0° (grazing)', cvs.width - 140, cvs.height - 6);
+                        }
+                        slider.addEventListener('input', draw); draw();
+                    }());
+                    </script>
+                </div>
+
+                <h3>The Single Ray Tracker: \(\phi'\) vs \(\phi\)</h3>
+                <p>While \(\frac{1}{\sin(\beta_0)}\) sets the base energy for the whole cone, each specific ray's energy is dictated by its azimuthal position \(\phi\) around the edge:</p>
+                <ul>
+                    <li><strong>\(\phi'\) (Angle of Incidence):</strong> Where the incoming ray came from, measured from Face 0.</li>
+                    <li><strong>\(\phi\) (Angle of Diffraction):</strong> Where a specific diffracted ray is heading around the edge.</li>
+                    <li><strong>Incident Shadow Boundary (ISB):</strong> The exact line separating the lit zone from the shadow zone, aligned with the forward momentum of the incoming ray.</li>
+                </ul>
+                <ol>
+                    <li><strong>Lit Zone:</strong> Diffracted energy interferes with the direct signal, creating complex multipath patterns.</li>
+                    <li><strong>ISB Transition Zone:</strong> As \(\phi\) approaches the ISB, Fresnel integrals spike sharply to smooth the physical discontinuity &mdash; preventing unphysical field jumps.</li>
+                    <li><strong>Deep in the Shadow:</strong> As \(\phi\) moves past the ISB toward Face N, the Fresnel integrals collapse toward zero, recreating the radio shadow.</li>
+                </ol>
+
+                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 2rem;">
+                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: ISB &amp; Diffracted Azimuth (&phi;)</h4>
+                    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                        <label style="color: var(--text-muted);">Incoming (&phi;'): <input type="range" id="phiIncSlider" min="10" max="170" value="45" style="width: 140px;"></label>
+                        <label style="color: var(--text-muted);">Diffracted (&phi;): <input type="range" id="phiOutSlider" min="0" max="270" value="200" style="width: 140px;"></label>
+                    </div>
+                    <p id="isbState" style="font-weight: bold; margin: 8px 0;"></p>
+                    <canvas id="isbCanvas" width="600" height="300" style="background: #f1f5f9; border-radius: 4px; display: block; max-width: 100%;"></canvas>
+                    <script>
+                    (function () {
+                        var cvs = document.getElementById('isbCanvas');
+                        var ctx = cvs.getContext('2d');
+                        var sInc = document.getElementById('phiIncSlider');
+                        var sOut = document.getElementById('phiOutSlider');
+                        var st = document.getElementById('isbState');
+                        function draw() {
+                            ctx.clearRect(0,0,cvs.width,cvs.height);
+                            var cx = cvs.width/2, cy = cvs.height/2;
+                            var pIn = parseInt(sInc.value), pOut = parseInt(sOut.value);
+                            var isb = 180 + pIn;
+                            if (pOut < isb - 5) { st.innerHTML = 'Zone: Lit (Interference with Direct Signal)'; st.style.color = '#16a34a'; }
+                            else if (pOut > isb + 5) { st.innerHTML = 'Zone: Shadow (Exponential Decay)'; st.style.color = '#dc2626'; }
+                            else { st.innerHTML = 'Zone: ISB Transition (Fresnel Spike)'; st.style.color = '#d97706'; }
+                            // Building
+                            ctx.fillStyle = '#cbd5e1';
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+200, cy); ctx.lineTo(cx+200, cy+200); ctx.lineTo(cx, cy+200); ctx.closePath(); ctx.fill();
+                            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx+200, cy); ctx.stroke();
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy+200); ctx.stroke();
+                            ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif';
+                            ctx.fillText('Building', cx + 70, cy + 100);
+                            // ISB
+                            ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([5,5]); ctx.lineWidth = 2;
+                            var isbRad = isb * Math.PI / 180;
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 200*Math.cos(isbRad), cy - 200*Math.sin(isbRad)); ctx.stroke();
+                            ctx.setLineDash([]);
+                            ctx.fillStyle = '#64748b'; ctx.font = '11px monospace';
+                            ctx.fillText('ISB', cx + 205*Math.cos(isbRad) - 8, cy - 205*Math.sin(isbRad));
+                            // Incoming
+                            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5;
+                            var inRad = pIn * Math.PI / 180;
+                            ctx.beginPath(); ctx.moveTo(cx + 160*Math.cos(inRad), cy - 160*Math.sin(inRad)); ctx.lineTo(cx, cy); ctx.stroke();
+                            ctx.fillStyle = '#ef4444'; ctx.font = '11px monospace';
+                            ctx.fillText("φ'=" + pIn + '°', cx + 165*Math.cos(inRad) - 10, cy - 165*Math.sin(inRad));
+                            // Outgoing
+                            ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5;
+                            var outRad = pOut * Math.PI / 180;
+                            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 160*Math.cos(outRad), cy - 160*Math.sin(outRad)); ctx.stroke();
+                            ctx.fillStyle = '#3b82f6'; ctx.font = '11px monospace';
+                            ctx.fillText('φ=' + pOut + '°', cx + 165*Math.cos(outRad), cy - 165*Math.sin(outRad));
+                        }
+                        sInc.addEventListener('input', draw); sOut.addEventListener('input', draw); draw();
+                    }());
+                    </script>
+                </div>
+
+                <h3>Consolidating the Mathematics: Spherical Coordinates</h3>
+                <p>The entire UTD computation maps naturally onto standard spherical coordinates, making the engine code clean:</p>
+                <ul>
+                    <li><strong>Z-Axis = Edge \(\hat{\mathbf{e}}\):</strong> The local Z-axis is the 1D building edge vector.</li>
+                    <li><strong>\(\beta_0\) = Polar Angle:</strong> Measured from Z-axis to the incoming ray.</li>
+                    <li><strong>\(\phi'\) and \(\phi\) = Azimuth Angles:</strong> Measured in the XY plane around the Z-axis.</li>
+                </ul>
+
+                <div class="impl-callout">
+                    <p class="impl-label">Tracing Implementation &mdash; Digital-Twin Engine</p>
+                    <h4>Why This Makes the Code Incredibly Clean</h4>
+                    <p>To generate a Keller Cone the engine uses standard spherical coordinates &mdash; no custom 3D rotation math required:</p>
+                    <ol>
+                        <li>Align local Z-axis with the building edge vector \(\hat{\mathbf{e}}\).</li>
+                        <li>Compute \(\beta_0 = \arccos(\hat{\mathbf{s}}' \cdot \hat{\mathbf{e}})\) from the incident ray.</li>
+                        <li>Loop azimuthal angle \(\phi\) from \(0°\) to \(360°\) in \(N\) discrete steps.</li>
+                        <li>For each \(\phi\), lock \(\beta_0\) and call <code>spherical_to_cartesian(\(\beta_0\), \(\phi\))</code> to get the diffracted ray direction in global (x, y, z).</li>
+                        <li>Safety check: <code>if beta_0 &lt; 1.0 &times; (π/180): skip_diffraction()</code></li>
+                    </ol>
+                </div>
+
+                <div class="widget-container" style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; background: #f8fafc; margin-bottom: 1rem;">
+                    <h4 style="margin-top: 0; color: var(--text-main);">Interactive: UTD Mapped to Spherical Coordinates</h4>
+                    <p style="color: var(--text-muted); margin-top: 0; font-size: 0.95rem;">Z = Edge axis &mdash; Polar angle \(\beta_0\) sets the cone half-angle &mdash; Azimuth \(\phi\) sweeps the cone surface (0° to 360°).</p>
+                    <canvas id="sphereCanvas" width="600" height="280" style="background: #0f172a; border-radius: 4px; display: block; max-width: 100%;"></canvas>
+                    <script>
+                    (function () {
+                        var cvs = document.getElementById('sphereCanvas');
+                        var ctx = cvs.getContext('2d');
+                        var W = cvs.width, H = cvs.height;
+                        var cx = W/2, cy = H/2 + 40;
+                        // Z axis
+                        ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2;
+                        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - 135); ctx.stroke();
+                        ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 12px monospace';
+                        ctx.fillText('Z = Edge (ê)', cx + 8, cy - 122);
+                        // X axis (Face 0)
+                        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.5;
+                        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 115, cy + 38); ctx.stroke();
+                        ctx.fillStyle = '#94a3b8'; ctx.font = '11px monospace';
+                        ctx.fillText('X (Face 0, φ=0°)', cx + 118, cy + 42);
+                        // Y axis (Face N)
+                        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - 80, cy + 26); ctx.stroke();
+                        ctx.fillText('Y (Face N)', cx - 102, cy + 40);
+                        // Incident ray β0 = 45°
+                        var beta = 45 * Math.PI / 180;
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2.5;
+                        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 95*Math.sin(beta), cy - 95*Math.cos(beta)); ctx.stroke();
+                        ctx.fillStyle = '#ef4444'; ctx.font = '11px monospace';
+                        ctx.fillText('Incident Ray', cx + 98*Math.sin(beta) + 4, cy - 98*Math.cos(beta));
+                        // β0 arc
+                        ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 1.5;
+                        ctx.beginPath(); ctx.arc(cx, cy, 40, -Math.PI/2, -Math.PI/2 + beta); ctx.stroke();
+                        ctx.fillStyle = '#fbbf24'; ctx.font = '11px monospace';
+                        ctx.fillText('β₀', cx + 24, cy - 28);
+                        // Keller Cone
+                        var cLen = 95, rX = cLen * Math.sin(beta), rY = rX * 0.28;
+                        var tY = cy + cLen * Math.cos(beta);
+                        ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.75;
+                        ctx.beginPath(); ctx.ellipse(cx, tY, rX, rY, 0, 0, 2*Math.PI); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx - rX, tY); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + rX, tY); ctx.stroke();
+                        ctx.globalAlpha = 1;
+                        ctx.fillStyle = '#3b82f6'; ctx.font = '11px monospace';
+                        ctx.fillText('Keller Cone', cx + rX + 6, tY + 4);
+                        // φ sweep arc
+                        ctx.strokeStyle = '#10b981'; ctx.lineWidth = 1.5;
+                        ctx.beginPath(); ctx.arc(cx, tY, rX * 0.45, 0, Math.PI * 1.3); ctx.stroke();
+                        ctx.fillStyle = '#10b981'; ctx.font = '11px monospace';
+                        ctx.fillText('φ (0°→360°)', cx + rX * 0.5, tY + 18);
+                    }());
+                    </script>
+                </div>
+
             </div>
         </details>
     </section>
