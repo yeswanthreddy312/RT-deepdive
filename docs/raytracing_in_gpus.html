@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RT-Deepdive: Ray Tracing in GPUs</title>
+
+    <!-- MathJax for rendering LaTeX -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['$$', '$$']]
+            }
+        };
+    </script>
+
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --border: #cbd5e1;
+            --card-bg: #ffffff;
+            --note-bg: #fef08a;
+            --note-border: #eab308;
+            --code-bg: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        nav {
+            background-color: var(--card-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        header {
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.75rem; color: var(--primary); margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; color: var(--text-main); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        h4 { font-size: 1.05rem; color: var(--text-main); margin-top: 1.2rem; margin-bottom: 0.4rem; }
+
+        p, li {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Code blocks */
+        pre {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            overflow-x: auto;
+            font-size: 0.88rem;
+            line-height: 1.65;
+            margin: 1.25rem 0;
+        }
+
+        code {
+            font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+        }
+
+        pre code {
+            color: inherit;
+            background: none;
+        }
+
+        /* Inline code */
+        p code, li code {
+            background-color: var(--code-bg);
+            color: #0f172a;
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* ASCII flowchart — monospace, no line-wrap */
+        .flowchart {
+            background-color: #0f172a;
+            color: #94a3b8;
+            border-radius: 8px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: "Fira Code", "Cascadia Code", Consolas, monospace;
+            font-size: 0.82rem;
+            line-height: 1.55;
+            white-space: pre;
+            margin: 1.5rem 0;
+        }
+
+        /* Stats / highlight boxes */
+        .stat-box {
+            background-color: #fff7ed;
+            border-left: 4px solid #f97316;
+            border-radius: 0 6px 6px 0;
+            padding: 0.85rem 1.1rem;
+            margin: 1rem 0;
+        }
+
+        .stat-box p { margin: 0; color: #7c2d12; font-weight: 500; }
+
+        /* Section intro card */
+        .intro-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .intro-card p { margin: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <nav>
+        <a href="index.html">Reflection &amp; Refraction</a>
+        <a href="diffraction.html">Diffraction &amp; Scattering</a>
+        <a href="notes.html">Research Notes &amp; Appendix</a>
+        <a href="raytracing_in_gpus.html" style="color: #1d4ed8; text-decoration: underline;">Ray Tracing in GPUs</a>
+    </nav>
+
+    <header>
+        <h1>Ray Tracing in GPUs</h1>
+        <p>From bare-metal ray geometry to GPU acceleration — the complete computational pipeline</p>
+    </header>
+
+    <!-- =========================================================
+         MODULE INTRO
+         ========================================================= -->
+    <section>
+        <div class="intro-card">
+            <p><strong>Module Summary:</strong> This module strips away the physics abstraction and examines exactly what a GPU executes when "firing a ray" through a Digital Twin city. It covers the ray equation, the triangle intersection math (Möller–Trumbore), why brute-force looping is catastrophic, how the Bounding Volume Hierarchy kills the loop, and how the geometry and physics engines hand off data through the recursive ray cycle.</p>
+        </div>
+
+        <!-- =====================================================
+             PACKET 1 — Ray-Triangle Intersection & Brute Force
+             ===================================================== -->
+        <h2>Ray–Triangle Intersection &amp; The Brute-Force Loop</h2>
+
+        <p>When you read a paper about a "ray hitting a building," your brain pictures a physical beam of light hitting a brick wall. But a Python engine or a GPU has no concept of light, bricks, or buildings. It only understands linear algebra and lists of numbers.</p>
+        <p>Let's strip away the physics and look at exactly what "sending a ray" and "checking a triangle" means at the bare-metal code level.</p>
+
+        <!-- ---- Section 1 ---- -->
+        <h3>1. What is a "Ray"? (The Equation)</h3>
+        <p>To the computer, sending a ray doesn't mean moving a particle through space. A ray is just a static mathematical function defining a 3D line. It consists of two vectors:</p>
+        <ul>
+            <li><strong>The Origin (\(\mathbf{O}\)):</strong> The 3D coordinates \((x, y, z)\) of your transmitter antenna.</li>
+            <li><strong>The Direction (\(\mathbf{D}\)):</strong> A normalized 3D vector (length of 1) pointing exactly where the wave is heading.</li>
+        </ul>
+        <p>The ray is defined by this equation:</p>
+        $$\mathbf{R}(t) = \mathbf{O} + t\mathbf{D}$$
+        <p>Here, \(t\) is the distance traveled. If the engine wants to know where the ray is after traveling 50 metres, it plugs in \(t = 50\) and gets a specific 3D coordinate.</p>
+
+        <!-- ---- Section 2 ---- -->
+        <h3>2. What is a "City"? (The Array)</h3>
+        <p>Your Digital Twin engine does not know what a "skyscraper" or a "corner" is. When you load a 3D map into Sionna or your custom Python engine, the code flattens the entire city into a massive, 1D array of triangles.</p>
+        <p>Every triangle is just three 3D vertices: \(\mathbf{V}_0, \mathbf{V}_1, \mathbf{V}_2\). If your city has 10 million triangles, your engine is holding a list of 30 million 3D coordinates in its RAM.</p>
+
+        <!-- ---- Section 3 ---- -->
+        <h3>3. The "Check" (The Möller–Trumbore Math)</h3>
+        <p>When the engine checks a single triangle, it must run a collision algorithm (usually Möller–Trumbore). The CPU takes the Ray equation and the three Triangle vertices and asks two strictly mathematical questions:</p>
+
+        <p><strong>Question A: Does the ray pierce the infinite plane?</strong><br>
+        The three vertices (\(\mathbf{V}_0, \mathbf{V}_1, \mathbf{V}_2\)) define a flat, 2D plane that extends infinitely in all directions. The engine uses dot products and cross products to find the exact value of \(t\) where the 3D ray perfectly intersects that infinite 2D plane.</p>
+
+        <p><strong>Question B: Is the piercing point inside the triangle's borders?</strong><br>
+        Just because the ray hit the <em>plane</em> doesn't mean it hit the <em>triangle</em>. The ray might have pierced the plane three miles to the left of where the actual building is. The engine calculates "Barycentric coordinates" (\(u\) and \(v\)).</p>
+        <ul>
+            <li>If \(u \ge 0\), \(v \ge 0\), and \((u + v) \le 1\), the ray successfully hit the physical triangle.</li>
+            <li>If not, it missed.</li>
+        </ul>
+        <p>This single "check" requires roughly <strong>27 floating-point math operations (FLOPs)</strong> — mostly multiplication, subtraction, and a division.</p>
+
+        <!-- DETAILS: Möller-Trumbore Deep Dive -->
+        <details style="margin: 15px 0; padding: 15px; border: 1px solid #444; border-radius: 8px; background-color: #1a1a1a;">
+            <summary style="font-weight: bold; cursor: pointer; color: #3498db;">Deep Dive: The Möller-Trumbore Math &amp; The Parallelogram Rule</summary>
+            <div style="margin-top: 15px; color: #e2e8f0;">
+                <p style="color: #e2e8f0;">The algorithm we are discussing (Möller–Trumbore) was revolutionary because it completely skips calculating the infinite plane. It calculates the hit distance (\(t\)) and the Barycentric coordinates (\(u, v\)) all in one single, elegant system of equations.</p>
+
+                <h4 style="color: #60a5fa;">1. The Setup: The Ray Meets the Triangle</h4>
+                <p style="color: #e2e8f0;">We define the triangle using one anchor point and two vector "edges" pointing away from it:</p>
+                <ul style="color: #e2e8f0;">
+                    <li><strong>The Anchor:</strong> \(\mathbf{V}_0\)</li>
+                    <li><strong>Edge 1 (\(\mathbf{E}_1\)):</strong> The vector from \(\mathbf{V}_0\) to \(\mathbf{V}_1\).</li>
+                    <li><strong>Edge 2 (\(\mathbf{E}_2\)):</strong> The vector from \(\mathbf{V}_0\) to \(\mathbf{V}_2\).</li>
+                </ul>
+                <p style="color: #e2e8f0;">Any point \(\mathbf{P}\) floating on the flat surface of that triangle can be reached by:</p>
+                $$\mathbf{P} = \mathbf{V}_0 + u\mathbf{E}_1 + v\mathbf{E}_2$$
+                <p style="color: #e2e8f0;">Meanwhile, your ray is: \(\mathbf{R} = \mathbf{O} + t\mathbf{D}\)</p>
+
+                <h4 style="color: #60a5fa;">2. The Pseudo-Equation (The Collision)</h4>
+                <p style="color: #e2e8f0;">To find the hit, we force the equations to equal each other:</p>
+                $$\mathbf{O} + t\mathbf{D} = \mathbf{V}_0 + u\mathbf{E}_1 + v\mathbf{E}_2$$
+                <p style="color: #e2e8f0;">The engine groups the three unknowns (\(t, u, v\)) into a matrix:</p>
+                $$\begin{bmatrix} -\mathbf{D} &amp; \mathbf{E}_1 &amp; \mathbf{E}_2 \end{bmatrix} \begin{bmatrix} t \\ u \\ v \end{bmatrix} = (\mathbf{O} - \mathbf{V}_0)$$
+                <p style="color: #e2e8f0;">Using Cramer's Rule, the GPU solves this instantly, giving \(t\) (distance) and \(u, v\) (2D surface location).</p>
+
+                <h4 style="color: #60a5fa;">3. Why \(u + v \le 1\)? (The Parallelogram Rule)</h4>
+                <p style="color: #e2e8f0;">Remember, \(u\) is how far you walk along Edge 1, and \(v\) is how far you walk along Edge 2.</p>
+                <ul style="color: #e2e8f0;">
+                    <li><strong>The Full Parallelogram:</strong> If you let \(u\) range from 0 to 1, and \(v\) range from 0 to 1 independently, you do <em>not</em> draw a triangle. You draw a complete Parallelogram (\(\mathbf{E}_1 + \mathbf{E}_2\)).</li>
+                    <li><strong>Cutting it in Half:</strong> Your triangle is exactly <em>half</em> of that parallelogram. The diagonal line connecting \(\mathbf{V}_1\) to \(\mathbf{V}_2\) slices it perfectly in two. Along that exact diagonal slice, the math dictates that <strong>\(u + v = 1\)</strong>.</li>
+                </ul>
+                <p style="color: #e2e8f0;">Because that diagonal boundary line is fixed at \(u + v = 1\):</p>
+                <ul style="color: #e2e8f0;">
+                    <li>If \(u + v = 1.2\), you walked past the diagonal slice into the empty top half. You <strong>missed</strong>.</li>
+                    <li>If \(u + v = 0.7\), you stopped short of the slice. You are <strong>inside</strong> the physical triangle.</li>
+                </ul>
+                <p style="color: #e2e8f0;">By simply checking if \(u \ge 0\), \(v \ge 0\), and \(u + v \le 1\), the computer can mathematically prove if the radio wave struck the brick wall without ever needing to know what a wall looks like!</p>
+            </div>
+        </details>
+
+        <!-- ---- Section 4 ---- -->
+        <h3>4. "Take Forever" (The Brute-Force Loop)</h3>
+        <p>If you do not use a BVH (Bounding Volume Hierarchy), your Python code has to execute a brute-force loop. It looks like this conceptually:</p>
+
+<pre><code class="language-python"># The Brute Force Nightmare
+def fire_ray(ray, city_triangles):
+    closest_hit = infinity
+
+    for triangle in city_triangles: # Loops 10,000,000 times
+
+        # Run the 27-FLOP math check
+        hit_distance = moller_trumbore(ray, triangle)
+
+        if hit_distance is valid and hit_distance &lt; closest_hit:
+            closest_hit = hit_distance
+
+    return closest_hit</code></pre>
+
+        <p>Here is why it melts your hardware:</p>
+        <ul>
+            <li><strong>1 Ray:</strong> To fire just one ray, the computer must run the Möller–Trumbore math 10 million times. That is <strong>270 million math operations</strong> just to find out what <em>one</em> ray hit.</li>
+            <li><strong>1 Keller Cone:</strong> If that ray hits an edge and shatters into 360 diffracted rays on a Keller Cone, the engine must now do \(360 \times 10{,}000{,}000\) checks. That is <strong>97.2 billion math operations</strong>.</li>
+            <li><strong>The Full Simulation:</strong> A standard 6G multipath simulation fires millions of initial rays. Without a BVH to skip the loop, you are asking the computer to perform trillions or quadrillions of calculations. A simulation that should take 0.5 seconds would take weeks.</li>
+        </ul>
+
+        <!-- DETAILS: Closest-hit Q&A -->
+        <details style="margin: 15px 0; padding: 15px; border: 1px solid #444; border-radius: 8px; background-color: #1a1a1a;">
+            <summary style="font-weight: bold; cursor: pointer; color: #3498db;">Q: Closest hit meaning we find 1st interaction right... after closest hit it diverts no?</summary>
+            <div style="margin-top: 15px; color: #e2e8f0;">
+                <p style="color: #e2e8f0;"><strong style="color: #4ade80;">Yes, exactly!</strong> Your intuition about the physics is spot on. But here is the critical software catch: the engine cannot just stop the loop the moment it finds a hit.</p>
+
+                <h4 style="color: #60a5fa;">The Problem with the Array</h4>
+                <p style="color: #e2e8f0;">The 1D array of 10 million triangles is completely unordered in physical space.</p>
+                <ul style="color: #e2e8f0;">
+                    <li>Triangle #1 in the array might be a building 5 kilometres away.</li>
+                    <li>Triangle #9,999,999 in the array might be a brick wall sitting 2 metres directly in front of your transmitter.</li>
+                </ul>
+                <p style="color: #e2e8f0;">If your engine just stops at the <em>first</em> hit it calculates, it might think the ray traveled 5 kilometres, completely ignoring the wall right in front of it!</p>
+
+                <h4 style="color: #60a5fa;">The Solution (The <code style="background:#0f172a; color:#86efac; padding:0.15em 0.35em; border-radius:4px;">closest_hit</code> Tracker)</h4>
+                <p style="color: #e2e8f0;">This is why the engine must check all 10 million triangles and keep a running scoreboard of the distance (\(t\)).</p>
+                <ol style="color: #e2e8f0;">
+                    <li>Ray checks Triangle #1. Hit! Distance \(t = 5000\) metres. (<code style="background:#0f172a; color:#86efac; padding:0.1em 0.3em; border-radius:3px;">closest_hit = 5000</code>)</li>
+                    <li>Ray checks Triangles #2 through #9,999,998. They all miss or are behind Triangle #1.</li>
+                    <li>Ray checks Triangle #9,999,999. Hit! Distance \(t = 2\) metres.</li>
+                    <li>Because \(2 &lt; 5000\), the engine updates the scoreboard. (<code style="background:#0f172a; color:#86efac; padding:0.1em 0.3em; border-radius:3px;">closest_hit = 2</code>)</li>
+                </ol>
+
+                <h4 style="color: #60a5fa;">The Diversion (The Physics Takeover)</h4>
+                <p style="color: #e2e8f0;">Once the loop finally finishes checking all 10 million triangles, the geometry engine hands the ultimate <code style="background:#0f172a; color:#86efac; padding:0.1em 0.3em; border-radius:3px;">closest_hit</code> (the 2-metre brick wall) back to the physics engine.</p>
+                <p style="color: #e2e8f0;"><em>Now</em> the ray diverts. The physics engine takes the surface normal of that specific triangle, runs the BRDF reflection math or UTD diffraction math, spawns the new child rays (diverting them in new directions), and the whole brutal geometry loop starts all over again for those new rays.</p>
+            </div>
+        </details>
+
+        <!-- =========================================================
+             PACKET 2 — BVH & Slab Method
+             ========================================================= -->
+        <h2>Killing the Loop: Bounding Volume Hierarchy (BVH)</h2>
+
+        <p>We have a brute-force loop staring down a 1D array of 10 million triangles. To check one ray, the computer must run the 27-FLOP Möller–Trumbore equation 10 million times.</p>
+        <p>We need to kill that loop. We do it using a Bounding Volume Hierarchy (BVH). Here is the deep dive into exactly how the engine builds and searches that structure.</p>
+
+        <!-- ---- AABB ---- -->
+        <h3>The Weapon Against the Loop: The AABB</h3>
+        <p>Before we build a tree, we need a box. Specifically, an <strong>Axis-Aligned Bounding Box (AABB)</strong>.</p>
+        <p>An AABB is a 3D rectangular box where every side is perfectly parallel to the X, Y, and Z axes of your world. Why is it axis-aligned? Because the math to check if a ray hits it is incredibly cheap.</p>
+        <p>Instead of doing complex cross-products to find Barycentric coordinates on a slanted triangle, checking an AABB uses the <strong>Slab Method</strong>.</p>
+
+        <!-- DETAILS: Slab Method Deep Dive -->
+        <details style="margin: 15px 0; padding: 15px; border: 1px solid #444; border-radius: 8px; background-color: #1a1a1a;">
+            <summary style="font-weight: bold; cursor: pointer; color: #3498db;">Deep Dive: The Slab Method &amp; Min/Max Logic</summary>
+            <div style="margin-top: 15px; color: #e2e8f0;">
+                <p style="color: #e2e8f0;">This algorithm turns a complex 3D geometry problem into a simple 1D number line comparison.</p>
+
+                <h4 style="color: #60a5fa;">1. What is a "Slab"?</h4>
+                <p style="color: #e2e8f0;">The computer views the box as the overlapping intersection of three infinite "Slabs":</p>
+                <ul style="color: #e2e8f0;">
+                    <li><strong>The X-Slab:</strong> The space between the left wall (\(X_{min}\)) and the right wall (\(X_{max}\)).</li>
+                    <li><strong>The Y-Slab:</strong> The space between the floor (\(Y_{min}\)) and the ceiling (\(Y_{max}\)).</li>
+                    <li><strong>The Z-Slab:</strong> The space between the front wall (\(Z_{min}\)) and the back wall (\(Z_{max}\)).</li>
+                </ul>
+                <p style="color: #e2e8f0;">For a ray to be physically <em>inside</em> the box, it must be inside all three slabs simultaneously.</p>
+
+                <h4 style="color: #60a5fa;">2. Speed &amp; Distance (The Math)</h4>
+                <p style="color: #e2e8f0;">The ray equation is \(\mathbf{R}(t) = \mathbf{O} + t\mathbf{D}\). Because the direction vector \(\mathbf{D}\) is normalized (length of 1), its components (\(D_x, D_y, D_z\)) act as <strong>fractional speeds</strong>. To find exactly when the ray hits the left X-wall, the engine uses \(Time = \frac{Distance}{Speed}\):</p>
+                $$t_{minX} = \frac{X_{min} - O_x}{D_x}$$
+                $$t_{maxX} = \frac{X_{max} - O_x}{D_x}$$
+                <p style="color: #e2e8f0;"><em>(The engine swaps these if the ray is flying backwards so \(t_{enterX}\) is always the smaller number.)</em></p>
+                <p style="color: #e2e8f0;"><strong>Edge Case Brilliance:</strong> If a ray is flying perfectly parallel to a wall (e.g., \(D_y = 0\)), dividing by zero results in Infinity (\(\infty\)). The logic naturally handles this — a ray with zero Y-speed will take an infinite amount of time to hit the Y-ceiling, meaning it never hits it.</p>
+
+                <h4 style="color: #60a5fa;">3. The <code style="background:#0f172a; color:#86efac; padding:0.15em 0.35em; border-radius:4px;">max()</code> and <code style="background:#0f172a; color:#86efac; padding:0.15em 0.35em; border-radius:4px;">min()</code> Logic (The Overlap)</h4>
+                <p style="color: #e2e8f0;">The engine computes entry and exit times for all three axes.</p>
+                <ul style="color: #e2e8f0;">
+                    <li><strong>True Entry Time:</strong> Find the <em>largest</em> (latest) of all the entry times.
+                        $$t_{enter\_box} = \max(t_{enterX},\; t_{enterY},\; t_{enterZ})$$
+                    </li>
+                    <li><strong>True Exit Time:</strong> Find the <em>smallest</em> (earliest) of all the exit times.
+                        $$t_{leave\_box} = \min(t_{leaveX},\; t_{leaveY},\; t_{leaveZ})$$
+                    </li>
+                </ul>
+                <p style="color: #e2e8f0;"><strong>Hit vs. Miss:</strong></p>
+                <ul style="color: #e2e8f0;">
+                    <li>If \(t_{enter\_box} &lt; t_{leave\_box}\): The ray successfully spent time inside the overlapping zone. <strong style="color:#4ade80;">Hit!</strong></li>
+                    <li>If \(t_{enter\_box} &gt; t_{leave\_box}\): The ray left one slab before it ever entered another. Physically, this means it missed the 3D box entirely. The engine instantly registers a <strong style="color:#f87171;">Miss</strong> and skips millions of triangles.</li>
+                </ul>
+            </div>
+        </details>
+
+        <p>By simply comparing the largest "enter" time against the smallest "leave" time using basic <code>max()</code> and <code>min()</code> functions, the GPU instantly knows if the ray passed through the box. It takes about <strong>4 FLOPs</strong>, compared to 27 for a triangle.</p>
+
+        <!-- ---- Building the Tree ---- -->
+        <h3>Building the Tree (The Pre-Compute)</h3>
+        <p>Before you fire a single ray, your Python engine must take that messy 1D array of 10 million triangles and organize it.</p>
+        <ol>
+            <li><strong>The Root Node:</strong> The engine finds the absolute minimum and maximum X, Y, and Z coordinates of the entire city. It draws one massive AABB around everything.</li>
+            <li><strong>The Split:</strong> The engine cuts that box in half (e.g., right down the middle of the X-axis). Now it has a "Left Box" and a "Right Box".</li>
+            <li><strong>Sorting:</strong> It looks at the 10 million triangles. If a triangle is in the Left Box, it goes to the Left Node array. If it's in the Right Box, it goes to the Right Node array.</li>
+            <li><strong>Recursion:</strong> The engine repeats this splitting process until the boxes are so tiny they only contain 1 or 2 triangles. These final, tiny boxes are called "Leaf Nodes."</li>
+        </ol>
+        <p>Instead of a flat list, your city is now a massive, branching 3D tree.</p>
+
+        <!-- ---- BVH Pseudo-Code ---- -->
+        <h3>The BVH Pseudo-Code (The New Loop)</h3>
+        <p>Now, let's fire our ray again. We throw away the brute-force loop and use a Stack-based Traversal.</p>
+
+<pre><code class="language-python">def fire_ray_bvh(ray, bvh_root_node):
+    closest_hit = infinity
+    stack = [bvh_root_node]  # Start with the giant city box
+
+    while stack is not empty:
+        current_box = stack.pop()  # Take a box off the pile
+
+        # 1. The Cheap Check (4 FLOPs)
+        if not slab_intersection(ray, current_box):
+            continue  # MISS! Instantly skip this box and everything inside it.
+
+        # 2. The Hit Logic
+        if current_box.is_leaf():
+            # We found a tiny box with actual triangles in it!
+            for triangle in current_box.triangles:
+                # 3. The Expensive Check (27 FLOPs)
+                hit_dist = moller_trumbore(ray, triangle)
+                if hit_dist &lt; closest_hit:
+                    closest_hit = hit_dist
+
+        else:
+            # It's a big box, and we hit it. Add its children to the stack.
+            stack.push(current_box.left_child)
+            stack.push(current_box.right_child)
+
+    return closest_hit</code></pre>
+
+        <!-- ---- Mathematical Annihilation ---- -->
+        <h3>The Mathematical Annihilation</h3>
+        <p>Look closely at what happens when the ray evaluates the line <code>if not slab_intersection...</code>.</p>
+        <p>Imagine firing a ray pointing straight up into the sky.</p>
+        <ol>
+            <li>The ray checks the giant Root Node. <strong style="color: #16a34a;">(Hit)</strong>.</li>
+            <li>The Root Node adds the North City Box and the South City Box to the stack.</li>
+            <li>The ray checks the North City Box. <strong style="color: #dc2626;">(Miss)</strong>.
+                <br><em>In one single clock cycle, the engine just ignored 5,000,000 triangles. It didn't even load them into memory.</em></li>
+            <li>The ray checks the South City Box. <strong style="color: #dc2626;">(Miss)</strong>.
+                <br><em>The engine ignores the remaining 5,000,000 triangles.</em></li>
+        </ol>
+        <p>By replacing \(O(N)\) brute-force looping with \(O(\log N)\) tree traversal, a ray tracing engine takes a problem that requires 10,000,000 expensive triangle math equations, and solves it using maybe <strong>30 or 40 incredibly cheap box math equations</strong>, ending with just 1 or 2 actual Möller–Trumbore checks at the very end.</p>
+
+        <!-- =========================================================
+             PACKET 3 — Geometry/Physics Handshake & Recursive Cycle
+             ========================================================= -->
+        <h2>The Handshake &amp; The Recursive Spawn</h2>
+
+        <p>Let's rewind exactly to the moment the geometry engine finishes searching the BVH and locks in that <code>closest_hit</code>.</p>
+        <p>At this exact microsecond, the geometry engine (which only cares about triangles) has to shake hands with the physics engine (which only cares about electromagnetic waves). Here is the deep dive into how that handover happens and how the engine spawns the next generation of rays.</p>
+
+        <!-- ---- 1. Intersection Payload ---- -->
+        <h3>1. The Intersection Payload (The Data Packet)</h3>
+        <p>When the BVH loop successfully concludes that a specific triangle is the absolute closest hit, the original incoming ray is effectively dead. Its journey is over.</p>
+        <p>Before destroying the ray, the geometry engine bundles up a "Payload" of data and hands it to the physics engine. This payload contains:</p>
+        <ul>
+            <li><strong>The Hit Point (\(P\)):</strong> The exact 3D coordinate of the crash, calculated as \(P = O + tD\).</li>
+            <li><strong>The Surface Normal (\(\hat{n}\)):</strong> The engine takes the two edges of the triangle (\(E_1\) and \(E_2\)) and calculates their cross product. This generates a 3D vector pointing perfectly perpendicular to the wall. The physics engine <em>must</em> have this to calculate the reflection angle.</li>
+            <li><strong>The Material ID:</strong> A pointer to a lookup table telling the engine if this triangle is made of concrete, glass, or metal (which defines its relative permittivity, \(\epsilon_r\), for the Fresnel equations).</li>
+        </ul>
+
+        <!-- ---- 2. Physics Takeover ---- -->
+        <h3>2. The Physics Takeover (Scattering)</h3>
+        <p>The physics engine receives the Payload and immediately checks the geometry state to decide which mathematical law to execute:</p>
+        <ul>
+            <li><strong>Path A: The Ray hit a Face (2D Surface).</strong> If it hit the flat surface of the triangle, the engine runs the <strong>Fresnel Reflection &amp; Transmission</strong> equations. It calculates exactly how much energy bounces off the wall, and how much bleeds through the wall.</li>
+            <li><strong>Path B: The Ray hit an Edge (1D Line).</strong> If the hit point \(P\) lies exactly on the boundary line shared by two adjacent triangles (and the wedge angle is valid), the engine triggers the <strong>UTD Diffraction</strong> math.</li>
+        </ul>
+
+        <!-- ---- 3. Recursive Spawn ---- -->
+        <h3>3. The Recursive Spawn (The Tree of Rays)</h3>
+        <p>This is where the engine's memory can explode if you aren't careful. The physics engine uses the math from Step 2 to spawn brand new <code>Ray</code> objects.</p>
+        <p>If the ray hit a glass window, the engine spawns <em>two</em> new rays:</p>
+        <ol>
+            <li><strong>The Reflected Ray:</strong>
+                <ul>
+                    <li>New Origin: The hit point \(P\) (plus a tiny micro-offset so it doesn't accidentally collide with the exact same triangle again).</li>
+                    <li>New Direction: Calculated using the incoming vector and the Surface Normal \(\hat{n}\).</li>
+                    <li>New Energy: Scaled down by the Fresnel reflection coefficient.</li>
+                </ul>
+            </li>
+            <li><strong>The Transmitted Ray:</strong>
+                <ul>
+                    <li>New Origin: The hit point \(P\) (offset slightly <em>inside</em> the wall).</li>
+                    <li>New Direction: Bent slightly according to Snell's Law of Refraction.</li>
+                    <li>New Energy: Scaled down by the transmission coefficient.</li>
+                </ul>
+            </li>
+        </ol>
+        <p>If the ray hit a building corner, it spawns \(N\) new rays to form the <strong>Keller Cone</strong>.</p>
+
+        <!-- ---- 4. Back to the BVH ---- -->
+        <h3>4. Throwing Them Back to the Monster</h3>
+        <p>Once the new child rays are spawned, the physics engine throws them right back into the BVH geometry loop.</p>
+        <ul>
+            <li>The Reflected Ray asks: <em>"What is my <code>closest_hit</code>?"</em></li>
+            <li>The Transmitted Ray asks: <em>"What is my <code>closest_hit</code>?"</em></li>
+        </ul>
+        <p>This is a <strong>Recursive Function</strong>. The child rays find their next hit, hand their payloads to the physics engine, spawn <em>grandchild</em> rays, and throw those back into the BVH. A single ray fired from a cell tower quickly branches into a massive, exponentially growing tree of rays tracing through the city.</p>
+
+        <!-- ---- 5. Kill Switch ---- -->
+        <h3>5. The Kill Switch (Max Depth)</h3>
+        <p>Because of this exponential growth, an engine left unchecked would simulate rays bouncing around inside a closed room infinitely until the computer ran out of RAM and crashed.</p>
+        <p>To prevent this, every ray carries a "Depth" or "Bounce" counter.</p>
+        <ul>
+            <li>The original ray is <code>depth = 0</code>.</li>
+            <li>Its children are <code>depth = 1</code>.</li>
+            <li>If the user sets the engine limit to <code>max_depth = 3</code>, any ray that hits a 4th wall is instantly deleted from memory without spawning children.</li>
+        </ul>
+        <p>This recursive cycle (BVH Search &rarr; Closest Hit &rarr; Physics Math &rarr; Spawn Children &rarr; BVH Search) is the absolute core loop of the ray tracer.</p>
+
+        <!-- ---- Flowchart ---- -->
+        <h3>The Recursive Ray Cycle Flowchart</h3>
+        <div class="flowchart">=================================================================================
+                            THE RECURSIVE RAY CYCLE
+=================================================================================
+
+  +-----------------------------------------------------------------------+
+  |                        1. GEOMETRY ENGINE (BVH)                       |
+  |  - Traverses the 3D AABB tree structure using the Slab Method         |
+  |  - Prunes millions of missed boxes via cheap min/max checks           |
+  |  - Identifies the absolute CLOSEST HIT triangle                       |
+  +-----------------------------------------------------------------------+
+                                      |
+                                      | [HANDOVER PAYLOAD]
+                                      v
+  +-----------------------------------------------------------------------+
+  |                        2. INTERSECTION PAYLOAD                        |
+  |  - Exact 3D Hit Coordinates (P = O + tD)                              |
+  |  - Surface Normal vector (n) perpendicular to the triangle            |
+  |  - Material ID (Permittivity constants for Concrete, Glass, etc.)     |
+  +-----------------------------------------------------------------------+
+                                      |
+                                      | [PHYSICS TAKEOVER]
+                                      v
+  +-----------------------------------------------------------------------+
+  |                           3. PHYSICS ENGINE                           |
+  |  Evaluates geometry type at Hit Point (P):                            |
+  |                                                                       |
+  |   [IF FACE INTERSECTION]                [IF EDGE INTERSECTION]        |
+  |   - Runs Fresnel Reflection/Trans.      - Runs UTD Diffraction        |
+  |   - Computes reflection/refraction      - Computes incident angles    |
+  |   - Spawns Child Rays (Refl/Trans)      - Spawns Keller Cone Rays     |
+  +-----------------------------------------------------------------------+
+                                      |
+                                      | [RECURSIVE SPAWN]
+                                      v
+  +-----------------------------------------------------------------------+
+  |                    4. RECURSIVE LOOP &amp; KILL SWITCH                    |
+  |  - Increments the ray's Depth counter: Depth = Depth + 1              |
+  |                                                                       |
+  |   IF Depth > Max Depth OR Hit Receiver Area:                          |
+  |      ==&gt; TERMINATE PATH (Saves memory from infinite bouncing)         |
+  |                                                                       |
+  |   ELSE:                                                               |
+  |      ==&gt; FEED NEW CHILD RAYS BACK INTO THE TOP OF THE BVH LOOP        |
+  +-----------------------------------------------------------------------+
+                                      |
+                                      +------- [Loops back to Step 1] ----+</div>
+
+    </section>
+
+    <footer style="margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem; text-align: center;">
+        RT-Deepdive Knowledge Base &mdash; Ray Tracing in GPUs
+    </footer>
+</div>
+
+</body>
+</html>
