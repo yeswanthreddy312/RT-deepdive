@@ -184,6 +184,40 @@
         </div>
 
         <!-- =====================================================
+             HISTORICAL ORIGINS — Why RT works for both optics & RF
+             ===================================================== -->
+        <h2>Historical Sneak Peek: The Origins of Ray Tracing</h2>
+
+        <p>How does the same algorithm work for both optical light in computer graphics <em>and</em> wireless radio signals in 6G simulation — and who actually invented it first?</p>
+
+        <!-- ---- The Physics Proxy ---- -->
+        <h3>The Physics Proxy (Why It Works for Both)</h3>
+        <p>Ray tracing serves as an energy proxy for Electromagnetic (EM) waves using a foundational mathematical framework called <strong>Geometrical Optics (GO)</strong>. GO makes one critical assumption: it treats the wavelength (\(\lambda\)) as effectively zero compared to the physical environment.</p>
+        <ul>
+            <li>For visible light, \(\lambda \approx 500\) nanometres (microscopic compared to a coffee cup).</li>
+            <li>For 6G radio, \(\lambda \approx 5\) millimetres (microscopic compared to a concrete building).</li>
+        </ul>
+        <p>Because the wave is so small relative to the geometry, we can safely abstract the complex, rippling EM field (Maxwell's equations) into a discrete, straight mathematical line — a ray. The geometry engine calculating intersections doesn't care if the ray is light or radio; it just computes the collision.</p>
+
+        <!-- ---- Historical Progression ---- -->
+        <h3>The Historical Progression (Who Built It First?)</h3>
+
+        <div class="card" style="border-left: 4px solid #7c3aed; margin-bottom: 1rem;">
+            <h4 style="margin-top: 0; color: #7c3aed;">Phase 1 &mdash; Cold War RF Origins (1950s–1970s)</h4>
+            <p style="margin-bottom: 0;">Computational ray tracing was actually pioneered by <strong>radar and radio engineers</strong>, not Hollywood or the gaming industry. Early mainframes were used for "Ray Launching" to calculate over-the-horizon radio bounces against the ionosphere and to simulate Radar Cross Sections (stealth technology) against fighter jets.</p>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #2563eb; margin-bottom: 1rem;">
+            <h4 style="margin-top: 0; color: #2563eb;">Phase 2 &mdash; The Graphics Explosion (1980–2010)</h4>
+            <p style="margin-bottom: 0;">The graphics industry weaponized the algorithm. To render millions of rays for cinematic frames, they poured immense funding into hardware and software optimisation. They invented BVH trees, the Möller–Trumbore intersection math, and dedicated GPU RT Cores. RF engineering did not have the funding to push computational geometry to this extreme.</p>
+        </div>
+
+        <div class="card" style="border-left: 4px solid #059669; margin-bottom: 1rem;">
+            <h4 style="margin-top: 0; color: #059669;">Phase 3 &mdash; The Modern Convergence (Present Day)</h4>
+            <p style="margin-bottom: 0;">Modern 5G/6G researchers realised the video game industry had <strong>perfectly solved the geometry bottleneck</strong>. Instead of building custom geometric algorithms, tools like Sionna take game engines (OptiX, Unreal), strip out visual lighting, and inject radio physics (Complex Permittivity, UTD Diffraction) directly into the optimised BVH loop.</p>
+        </div>
+
+        <!-- =====================================================
              PACKET 1 — Ray-Triangle Intersection & Brute Force
              ===================================================== -->
         <h2>Ray–Triangle Intersection &amp; The Brute-Force Loop</h2>
